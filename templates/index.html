@@ -5,22 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
     <link rel="stylesheet" href="/static/styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 </head>
-<body>
-    <div class="container">
-        <h1>Welcome to the Chat App</h1>
-
-       <form hx-post="/send" hx-target="#response" hx-swap="innerHTML">
-            <input type="text" name="message" placeholder="Type your message" required>
-            <button type="submit">Send</button>
+<body class="bg-gray-100 p-5">
+    <div class="container mx-auto max-w-lg bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold text-center mb-6">Chat Application</h1>
+        <form hx-post="/send" hx-target="#response" hx-swap="innerHTML" class="flex mb-4">
+            <label class="w-100">
+                <input type="text" name="message" placeholder="Type your message" required class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
+            </label>
+            <button type="submit" class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">Send</button>
         </form>
-        <div id="response"></div>
+        <div id="response" class="mb-4"></div>
 
-        <hr>
-
-        <button hx-get="/history" hx-target="#history" hx-swap="innerHTML">Load History</button>
-        <div id="history"></div>
+        <button hx-get="/history" hx-target="#chat-history" hx-swap="innerHTML" class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">Load History</button>
+        <div id="chat-history" class="bg-gray-50 border border-gray-300 rounded-lg p-4 min-h-[100px] fade-in">
+            <ul class="space-y-2">
+                {% for msg in messages %}
+                    <li class="bg-white border border-gray-200 rounded-lg p-2 shadow-sm transition duration-300 ease-in-out hover:shadow-md">{{ msg }}</li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 </body>
 </html>

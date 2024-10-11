@@ -1,14 +1,17 @@
 import socket
+from datetime import datetime
 
-from fastapi import FastAPI, Request, Form
+from fastapi import FastAPI, Request, Form, HTTPException
+
+from adapters.persistence import save_message
 from core.chat_service import ChatService
-from core.entities import User
+from core.entities import User, Message
 import uvicorn
 from threading import Thread
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-from adapters.network import start_socket_server
+from adapters.network import start_socket_server, send_message_to_network
 
 HOST = 'localhost'
 PORT = 65432
@@ -22,19 +25,21 @@ templates = Jinja2Templates(directory="templates")
 current_user = User(username="alBz")
 chat_service = ChatService(current_user)
 
+
 @app.get("/", response_class=HTMLResponse)
 async def get_home(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/send")
-async def send_message(request: Request, message: str = Form(...)):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.connect((HOST, PORT))
-        s.sendall(message.encode('utf-8'))
-        data = s.recv(1024)
+@app.post("/send", response_class=HTMLResponse)
+async def send_message(request: Request):
+    form = await request.form()
+    message_content = form.get("message")
+    sender = User("alBz")
+    message = Message(sender, message_content)
+    send_message_to_network(message_content)
+    save_message(message)
 
-    chat_service.send_message(message)
-    return {"response": data.decode('utf-8')}
+    return f'<li class="bg-white border border-gray-200 rounded-lg p-2 shadow-sm transition duration-300 ease-in-out hover:shadow-md"><strong>{message.sender.username}:</strong> {message.content} <em>{message.timestamp}</em></li>'
 
 @app.get("/history")
 def get_history():
