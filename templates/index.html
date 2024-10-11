@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Welcome to the Chat App</h1>
+
+       <form hx-post="/send" hx-target="#response" hx-swap="innerHTML">
+            <input type="text" name="message" placeholder="Type your message" required>
+            <button type="submit">Send</button>
+        </form>
+        <div id="response"></div>
+
+        <hr>
+
+        <button hx-get="/history" hx-target="#history" hx-swap="innerHTML">Load History</button>
+        <div id="history"></div>
+    </div>
+</body>
+</html>
