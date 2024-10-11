@@ -9,24 +9,22 @@
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 </head>
 <body class="bg-gray-100 p-5">
-    <div class="container mx-auto max-w-lg bg-white rounded-lg shadow-lg p-6">
-        <h1 class="text-2xl font-bold text-center mb-6">Chat Application</h1>
-        <form hx-post="/send" hx-target="#response" hx-swap="innerHTML" class="flex mb-4">
-            <label class="w-100">
-                <input type="text" name="message" placeholder="Type your message" required class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
-            </label>
+    <div class="container mx-auto h-full w-full max-w-xl bg-white rounded-lg shadow-lg flex flex-col">
+        <h1 class="text-3xl font-bold text-center mb-6 p-4 border-b">Chat Application</h1>
+
+        <div class="flex-grow p-4 overflow-y-auto bg-gray-50 rounded-lg border border-gray-300 mb-4 mr-4 ml-4 rounded-lg">
+            <div id="chat-history" class="min-h-[300px] fade-in">
+            </div>
+        </div>
+
+        <form hx-post="/send" hx-target="#response" hx-swap="innerHTML" class="flex p-4 border-t">
+            <input type="text" name="message" placeholder="Type your message" required class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
             <button type="submit" class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">Send</button>
         </form>
-        <div id="response" class="mb-4"></div>
 
-        <button hx-get="/history" hx-target="#chat-history" hx-swap="innerHTML" class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">Load History</button>
-        <div id="chat-history" class="bg-gray-50 border border-gray-300 rounded-lg p-4 min-h-[100px] fade-in">
-            <ul class="space-y-2">
-                {% for msg in messages %}
-                    <li class="bg-white border border-gray-200 rounded-lg p-2 shadow-sm transition duration-300 ease-in-out hover:shadow-md">{{ msg }}</li>
-                {% endfor %}
-            </ul>
-        </div>
+        <div id="response" class="m-4"></div>
+
+        <button hx-get="/history" hx-target="#chat-history" hx-swap="innerHTML" class="bg-blue-500 text-white rounded-lg px-4 py-2 m-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none self-center">Load History</button>
     </div>
 </body>
 </html>

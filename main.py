@@ -44,7 +44,9 @@ async def send_message(request: Request):
 @app.get("/history")
 def get_history():
     messages = chat_service.load_history()
-    return {"history": [str(msg) for msg in messages]}
+    list_items = "".join(f"<li>{msg}</li>" for msg in messages)
+    response_html = f"<ul>{list_items}</ul>".strip().replace('"', ' ')
+    return HTMLResponse(content=response_html)
 
 def start_fastapi():
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
