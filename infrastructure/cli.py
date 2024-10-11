@@ -1,13 +1,15 @@
 from core.chat_service import ChatService
 from core.entities import User
 
+
 def start_chat():
     username = input("Enter your username: ")
     user = User(username=username)
     chat_service = ChatService(user)
+    exit_chat = False
 
-    while True:
-        command = input("Enter 'send' to send a message or 'history' to view chat history: ")
+    while not exit_chat:  # Run while exit_chat is False
+        command = input("Enter 'send' to send a message, 'history' to view chat history, or 'exit' to quit: ")
 
         if command == 'send':
             content = input("Enter your message: ")
@@ -17,5 +19,6 @@ def start_chat():
             for msg in messages:
                 print(msg)
         elif command == 'exit':
-            print("Exiting chat...")
-            break
+            exit_chat = True
+        else:
+            print("Invalid command. Please enter 'send', 'history', or 'exit'.")
