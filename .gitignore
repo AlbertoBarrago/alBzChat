@@ -1,2 +1,4 @@
 .venv
 .idea
+chat_history.json
+__pycache__/

@@ -14,4 +14,5 @@ class ChatService:
         send_message_to_network(str(message))
 
     def load_history(self):
+        print(self.user.username)
         return load_messages()
