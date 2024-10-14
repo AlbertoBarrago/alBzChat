@@ -2,6 +2,7 @@ from adapters.network import send_message_to_network
 from adapters.persistence import save_message, load_messages
 from core.entities import User, Message
 
+#TODO User db
 
 class ChatService:
     def __init__(self, user: User):

@@ -14,10 +14,10 @@ def register_user_call(username, password):
         connection.commit()
         cursor.close()
         print("User registered successfully.")
-        return True
+        return "User registered successfully."
     except Error as e:
         print(f"The error '{e}' occurred")
-        return False
+        return f"The error '{e}' occurred"
     finally:
         connection.close()
 
