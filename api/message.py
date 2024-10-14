@@ -1,12 +1,12 @@
 import uvicorn
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
-from core.chat_service import ChatService
+from services.chat_service import ChatService
 from adapters.network import send_message_to_network
 from adapters.persistence import save_message
 from core.entities import User, Message
 
-current_user = User(username="alBz")
+current_user = User(username="alBz", password="<PASSWORD>")
 chat_service = ChatService(current_user)
 
 router = APIRouter()
@@ -14,7 +14,7 @@ router = APIRouter()
 async def send_message(request: Request):
     form = await request.form()
     message_content = form.get("message")
-    sender = User("alBz")
+    sender = User("alBz", "<PASSWORD>")
     message = Message(sender, message_content)
     send_message_to_network(message_content)
     save_message(message)

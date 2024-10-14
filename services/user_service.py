@@ -1,10 +1,6 @@
+import hashlib
 from mysql.connector import Error
 from db.db import get_db_connection
-from adapters.network import send_message_to_network
-from adapters.persistence import save_message, load_messages
-from core.entities import User, Message
-import hashlib
-
 
 def register_user_call(username, password):
     connection = get_db_connection()
@@ -25,7 +21,6 @@ def register_user_call(username, password):
     finally:
         connection.close()
 
-
 def login(username, hashed_password):
     connection = get_db_connection()
     if connection is None:
@@ -42,17 +37,3 @@ def login(username, hashed_password):
     except Error as e:
         print(f"The error '{e}' occurred")
         return "Login failed"
-
-
-class ChatService:
-    def __init__(self, user: User):
-        self.user = user
-
-    def send_message(self, content: str):
-        message = Message(sender=self.user, content=content)
-        save_message(message)
-        send_message_to_network(str(message))
-
-    def load_history(self):
-        print("Charge history user:", self.user.username)
-        return load_messages()

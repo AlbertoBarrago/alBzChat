@@ -2,8 +2,9 @@ import hashlib
 
 from fastapi import Form
 from fastapi.responses import HTMLResponse
-from core.chat_service import register_user_call, login
 from fastapi import APIRouter
+
+from services.user_service import login, register_user_call
 
 router = APIRouter()
 

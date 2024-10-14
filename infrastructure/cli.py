@@ -1,4 +1,4 @@
-from core.chat_service import ChatService
+from services.chat_service import ChatService
 from core.entities import User
 
 
