@@ -6,7 +6,7 @@ from fastapi import HTTPException
 from starlette.responses import HTMLResponse
 
 from core.entities import UserLoggedIn, User
-from db.db import get_db_connection
+from db.create import get_db_connection
 from mysql.connector import Error
 
 from utils.auth_utils import create_access_token
@@ -61,12 +61,12 @@ def login_auth_persistence(user: UserLoggedIn):
         user = cursor.fetchone()
 
         user_model = {
-            "user": User(user[0]),
+            "user": User(user[1]).username,
             "message": "Login Successful!",
         }
         if user_model:
             access_token = create_access_token(
-                data={"sub": user_model['user'].username}, expires_delta=timedelta(hours=1)
+                data={"username": user_model['user']}, expires_delta=timedelta(hours=1)
             )
             return {"access_token": access_token,
                     "token_type": "bearer",
