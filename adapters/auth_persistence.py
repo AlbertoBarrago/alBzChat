@@ -31,7 +31,6 @@ def register_auth_persistence(user: UserLoggedIn):
             }
             return resp
 
-
         query = "INSERT INTO users (username, password) VALUES (%s, %s)"
         cursor.execute(query, (username, hashed_password))
         connection.commit()
