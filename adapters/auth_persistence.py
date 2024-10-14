@@ -3,7 +3,6 @@ import hashlib
 from datetime import timedelta
 
 from fastapi import HTTPException
-from starlette.responses import HTMLResponse
 
 from core.entities import UserLoggedIn, User
 from db.create import get_db_connection
@@ -52,34 +51,31 @@ def register_auth_persistence(user: UserLoggedIn):
 
 def login_auth_persistence(user: UserLoggedIn):
     if connection is None:
-        return False
+        return {"message": "Database connection is not established."}
+
     hashed_password = hashlib.sha256(user.password.encode()).hexdigest()
+
     try:
         cursor = connection.cursor()
-        query = "SELECT * FROM users WHERE username = %s AND password = %s"
+        query = "SELECT username FROM users WHERE username = %s AND password = %s"
         cursor.execute(query, (user.username, hashed_password))
-        user = cursor.fetchone()
+        result = cursor.fetchone()
 
-        user_model = {
-            "user": User(user[1]).username,
-            "message": "Login Successful!",
-        }
-        if user_model:
+        if result:
             access_token = create_access_token(
-                data={"username": user_model['user']}, expires_delta=timedelta(hours=1)
+                data={"username": result[0]}, expires_delta=timedelta(hours=1)
             )
-            return {"access_token": access_token,
-                    "token_type": "bearer",
-                    "message": HTMLResponse(content=user_model['message'])
-                    }
-        else:
             return {
-                "message": HTTPException(status_code=401, detail="Invalid credentials")
+                "access_token": access_token,
+                "token_type": "bearer",
+                "message": "Login Successful!"
             }
+        else:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+
     except Error as e:
         print(f"The error '{e}' occurred")
-        resp = {
+        return {
             "user": None,
-            "message": "Login failed!",
+            "message": "Login failed!"
         }
-        return resp
