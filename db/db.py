@@ -4,7 +4,6 @@ import os
 
 load_dotenv()
 
-
 def create_database_and_table():
     connection = None
     cursor = None
@@ -57,8 +56,6 @@ def create_database_and_table():
             cursor.close()
         if connection is not None:
             connection.close()
-
-
 
 def get_db_connection():
     connection = connect(
