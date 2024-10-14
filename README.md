@@ -8,6 +8,7 @@
 ![img.png](img.png)
 
 #### TODO: 
-- [ ] Spostare logica di sessionamento co JWT,
-- [ ] Proteggere le chiamate per utilizzare il token per recuperare lo user. 
+- [x] Spostare logica di sessionamento co JWT,
+- [x] Proteggere le chiamate per utilizzare il token per recuperare lo user. 
+- [ ] Aggiunge persistenza per message e il loro recupero
 - [ ] Migrare da mySql a OracleDb
