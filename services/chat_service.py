@@ -1,8 +1,7 @@
-from adapters.network import send_message_to_network
-from adapters.messages_persistence import save_message
+from adapters.network_adapter import send_message_to_network
+from adapters.messages_adapter import save_message, load_messages
 from core.entities import User, Message
 
-#TODO User db
 
 class ChatService:
     def __init__(self, user: User):
@@ -10,9 +9,8 @@ class ChatService:
 
     def send_message(self, content: str):
         message = Message(sender=self.user, content=content)
-        save_message(message)
+        save_message(message, self.user)
         send_message_to_network(str(message))
 
-    # def load_history(self):
-    #     print("Charge history user:", self.user.username)
-    #     return load_messages()
+    def load_history(self):
+        return load_messages(self.user)

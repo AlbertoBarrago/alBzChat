@@ -1,4 +1,4 @@
-from fastapi import Form, HTTPException
+from fastapi import Form
 from fastapi import APIRouter
 
 from core.entities import UserLoggedIn

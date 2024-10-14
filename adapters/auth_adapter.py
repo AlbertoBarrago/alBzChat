@@ -3,12 +3,11 @@ import hashlib
 from datetime import timedelta
 
 from fastapi import HTTPException
-
 from core.entities import UserLoggedIn, User
 from db.create import get_db_connection
 from mysql.connector import Error
 
-from utils.auth_utils import create_access_token
+from utils.auth_util import create_access_token
 
 connection = get_db_connection()
 
@@ -30,7 +29,6 @@ def register_auth_persistence(user: UserLoggedIn):
                 "message": "User already exists!"
             }
             return resp
-
 
         query = "INSERT INTO users (username, password) VALUES (%s, %s)"
         cursor.execute(query, (username, hashed_password))

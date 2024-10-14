@@ -15,20 +15,15 @@ def create_database_and_table():
         )
         cursor = connection.cursor()
 
-        # Create database if it doesn't exist
         cursor.execute('CREATE DATABASE IF NOT EXISTS CHAT_APP')
 
-        # Create user if it doesn't exist
         cursor.execute('CREATE USER IF NOT EXISTS "alBz"@"localhost" IDENTIFIED BY "password"')
 
-        # Grant privileges to the user
         cursor.execute('GRANT ALL PRIVILEGES ON CHAT_APP.* TO "alBz"@"localhost"')
         cursor.execute('FLUSH PRIVILEGES')
 
-        # Use the new database
         cursor.execute('USE CHAT_APP')
 
-        # Create users table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS users (
                 id INT AUTO_INCREMENT PRIMARY KEY,
@@ -37,7 +32,6 @@ def create_database_and_table():
             )
         """)
 
-        # Create messages table
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS messages (
                 id INT AUTO_INCREMENT PRIMARY KEY,
