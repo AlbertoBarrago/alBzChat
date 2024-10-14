@@ -1,5 +1,5 @@
-from adapters.network import send_message_to_network
-from adapters.messages_persistence import save_message, load_messages
+from adapters.network_adapter import send_message_to_network
+from adapters.messages_adapter import save_message, load_messages
 from core.entities import User, Message
 
 

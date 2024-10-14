@@ -3,7 +3,7 @@ from datetime import timedelta
 from fastapi import HTTPException
 from starlette.responses import HTMLResponse
 
-from adapters.auth_persistence import register_auth_persistence, login_auth_persistence
+from adapters.auth_adapter import register_auth_persistence, login_auth_persistence
 from core.entities import UserLoggedIn
 from utils.auth_utils import create_access_token
 

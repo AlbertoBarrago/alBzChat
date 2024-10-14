@@ -2,8 +2,8 @@ import uvicorn
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
 from services.chat_service import ChatService
-from adapters.network import send_message_to_network
-from adapters.messages_persistence import save_message
+from adapters.network_adapter import send_message_to_network
+from adapters.messages_adapter import save_message
 from core.entities import User, Message
 from utils.auth_utils import get_current_user
 

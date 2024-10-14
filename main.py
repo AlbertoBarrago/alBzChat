@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from api.messages_api import start_fastapi
 from threading import Thread
-from adapters.network import start_socket_server
+from adapters.network_adapter import start_socket_server
 from api.home_api import router as home_router
 from api.login_api import router as auth_router
 from api.messages_api import router as message_router

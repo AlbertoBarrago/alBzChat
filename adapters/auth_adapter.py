@@ -3,7 +3,6 @@ import hashlib
 from datetime import timedelta
 
 from fastapi import HTTPException
-
 from core.entities import UserLoggedIn, User
 from db.create import get_db_connection
 from mysql.connector import Error
