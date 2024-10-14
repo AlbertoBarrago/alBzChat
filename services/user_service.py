@@ -1,25 +1,13 @@
 import hashlib
 from mysql.connector import Error
+
+from adapters.auth_persistence import register_auth_persistence
+from core.entities import User, UserLoggedIn
 from db.db import get_db_connection
 
-def register_user_call(username, password):
-    connection = get_db_connection()
-    if connection is None:
-        return False
-    hashed_password = hashlib.sha256(password.encode()).hexdigest()  # Hash the password
-    try:
-        cursor = connection.cursor()  # Create a single cursor
-        query = "INSERT INTO users (username, password) VALUES (%s, %s)"
-        cursor.execute(query, (username, hashed_password))
-        connection.commit()
-        cursor.close()
-        print("User registered successfully.")
-        return "User registered successfully."
-    except Error as e:
-        print(f"The error '{e}' occurred")
-        return f"The error '{e}' occurred"
-    finally:
-        connection.close()
+
+def register_user_call(user: UserLoggedIn):
+    return register_auth_persistence(user)
 
 def login(username, hashed_password):
     connection = get_db_connection()
@@ -32,8 +20,16 @@ def login(username, hashed_password):
         cursor.execute(query, (username, hashed_password))
         user = cursor.fetchone()
         if user:
-            print("Login successful!")
-            return "Login successful!"
+            print("Login successful!", user)
+            resp = {
+                "user": User(user[0]),
+                "message": "Login Successful!",
+            }
+            return resp
     except Error as e:
         print(f"The error '{e}' occurred")
-        return "Login failed"
+        resp = {
+            "user": None,
+            "message": "Login failed!",
+        }
+        return resp
