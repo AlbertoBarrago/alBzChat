@@ -1,10 +1,10 @@
 from fastapi import FastAPI
-from api.message import start_fastapi
+from api.messages_api import start_fastapi
 from threading import Thread
 from adapters.network import start_socket_server
-from api.home import router as home_router
-from api.auth import router as auth_router
-from api.message import router as message_router
+from api.home_api import router as home_router
+from api.login_api import router as auth_router
+from api.messages_api import router as message_router
 
 app = FastAPI()
 

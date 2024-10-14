@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chat App</title>
-    <link rel="stylesheet" href="/static/styles.css">
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 </head>
@@ -14,7 +13,7 @@
 
     <div id="auth-section" class="mb-4">
         <h2 class="text-xl font-semibold mb-4">Register / Login</h2>
-        <form id="register-form" hx-post="/register" hx-target="#auth-response" hx-swap="innerHTML" class="mb-4">
+        <form id="register-form" hx-post="/auth/register" hx-target="#auth-response" hx-swap="innerHTML" class="mb-4">
             <input type="text" name="username" placeholder="Enter your username" required
                    class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
             <input type="password" name="password" placeholder="Enter your password" required
@@ -24,7 +23,7 @@
                 Register
             </button>
         </form>
-        <form id="login-form" hx-post="/login" hx-target="#auth-response" hx-swap="innerHTML">
+        <form id="login-form" hx-post="/auth/login" hx-target="#auth-response" hx-swap="innerHTML">
             <input type="text" name="username" placeholder="Enter your username" required
                    class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
             <input type="password" name="password" placeholder="Enter your password" required
@@ -38,7 +37,7 @@
     </div>
 
     <div id="chat-section" class="hidden">
-        <form hx-post="/message/send" hx-target="#response" hx-swap="innerHTML" class="flex mb-4">
+        <form id="messageForm" hx-post="/message/send" hx-target="#response" hx-swap="innerHTML" class="flex mb-4">
             <label class="w-100">
                 <input type="text" name="message" placeholder="Type your message" required
                        class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -49,7 +48,11 @@
             </button>
         </form>
         <div id="response" class="mb-4"></div>
-        <button hx-get="/message/history" hx-target="#chat-history" hx-swap="innerHTML"
+        <button id="logout"
+                class="bg-red-300 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
+            Logout
+        </button>
+        <button id="history" hx-get="/message/history" hx-target="#chat-history" hx-swap="innerHTML"
                 class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Load History
         </button>
@@ -58,18 +61,56 @@
 </div>
 
 <script>
-    document.addEventListener('htmx:afterRequest', function (event) {
-        console.log('htmx:afterRequest triggered');
-        console.log('Event Target:', event.target.id); // Log the target element ID
+    const init = () => {
+        // Set Auth Header for OAuth2
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            const url = event.detail.path;
+            const token = sessionStorage.getItem("token");
 
-        if (event.target.id === 'login-form') {
-            const responseText = event.target.innerText.trim();
-            console.log('Response Text:', responseText);
-            if (responseText === 'Registration successful!' || responseText === 'Login') {
+            if (token && !url.includes("/login") && !url.includes("/register")) {
+                event.detail.headers['Authorization'] = `Bearer ${token}`;
+            }
+        });
+        // Verify on load if the user is logged in
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = sessionStorage.getItem("token");
+
+            if (token) {
                 document.getElementById('auth-section').classList.add('hidden');
                 document.getElementById('chat-section').classList.remove('hidden');
             }
-        }
-    });
+        })
+        // After request if is login-form, set token in session storage
+        document.addEventListener('htmx:afterRequest', function (event) {
+            console.log('htmx:afterRequest triggered');
+            console.log('Event Target:', event.target.id);
+
+            if (event.target.id === 'login-form') {
+                const responseText = document.getElementById('auth-response').innerText.trim();
+                console.log('Response Text:', JSON.parse(responseText));
+                const resp = JSON.parse(responseText);
+                const token = resp.access_token;
+                if (resp && resp.access_token) {
+                    sessionStorage.setItem('token', token);
+                    document.getElementById('auth-section').classList.add('hidden');
+                    document.getElementById('chat-section').classList.remove('hidden');
+                }
+            }
+        });
+        // Clear form
+        document.getElementById("register-form" || "login-form").addEventListener("submit", function (event) {
+            event.preventDefault();
+            setTimeout(() => {
+                this.reset();
+            }, 500);
+        });
+        // Logout
+        document.getElementById('logout').addEventListener('click', () => {
+            sessionStorage.removeItem('token')
+            window.location.href = '/'
+        })
+    }
+
+    init();
 </script>
 </body>
