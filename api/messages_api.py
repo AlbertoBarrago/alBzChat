@@ -22,7 +22,9 @@ async def send_message(request: Request, current_user: User = Depends(get_curren
     # save_message(message)
 
     # HTML response for the message
-    return f'<li class="bg-white border border-gray-200 rounded-lg p-2 shadow-sm transition duration-300 ease-in-out hover:shadow-md"><strong>{current_user}:</strong> {message.content} <em>{message.timestamp}</em></li>'
+    return (f'<li class="bg-white border border-gray-200 rounded-lg p-2 '
+            f'shadow-sm transition duration-300 ease-in-out hover:shadow-md">'
+            f'<strong>{current_user}:</strong> {message.content} <em>{message.timestamp}</em></li>')
 
 
 # GET /history endpoint

@@ -18,6 +18,7 @@ def register_auth_persistence(user: UserLoggedIn):
 
         if existing_user:
             print("User already exists!")
+            cursor.close()
             resp = {
                 "user": None,
                 "message": "User already exists!"
@@ -33,7 +34,6 @@ def register_auth_persistence(user: UserLoggedIn):
         resp = {
             "message": "User registered successfully.",
         }
-        cursor.close()
         return resp
     except Error as e:
         print(f"The error '{e}' occurred")
@@ -41,8 +41,6 @@ def register_auth_persistence(user: UserLoggedIn):
             "message": f"The error '{e}' occurred",
         }
         return resp
-    finally:
-        connection.close()
 
 
 def login_auth_persistence(user: UserLoggedIn):

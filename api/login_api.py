@@ -20,7 +20,8 @@ async def register_user(username: str = Form(...), password: str = Form(...)):
 @router.post("/login")
 async def login_user(username: str = Form(...), password: str = Form(...)):
     hashed_password = hashlib.sha256(password.encode()).hexdigest()
-    resp = login(username, hashed_password)
+    user_logged_in = UserLoggedIn(username=username, password=hashed_password)
+    resp = login(user_logged_in)
     if resp:
         access_token = create_access_token(
             data={"sub": username}, expires_delta=timedelta(hours=1)
