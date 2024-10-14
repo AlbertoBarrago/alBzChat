@@ -1,8 +1,9 @@
 from datetime import datetime
 
 class User:
-    def __init__(self, username: str):
+    def __init__(self, username: str, password: str):
         self.username = username
+        self.password = password
 
 class Message:
     def __init__(self, sender: User, content: str, timestamp = None):

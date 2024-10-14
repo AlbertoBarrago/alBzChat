@@ -9,22 +9,67 @@
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
 </head>
 <body class="bg-gray-100 p-5">
-    <div class="container mx-auto h-full w-full max-w-xl bg-white rounded-lg shadow-lg flex flex-col">
-        <h1 class="text-3xl font-bold text-center mb-6 p-4 border-b">Chat Application</h1>
+<div class="container mx-auto max-w-lg bg-white rounded-lg shadow-lg p-6">
+    <h1 class="text-2xl font-bold text-center mb-6">Chat Application</h1>
 
-        <div class="flex-grow p-4 overflow-y-auto bg-gray-50 rounded-lg border border-gray-300 mb-4 mr-4 ml-4 rounded-lg">
-            <div id="chat-history" class="min-h-[300px] fade-in">
-            </div>
-        </div>
-
-        <form hx-post="/send" hx-target="#response" hx-swap="innerHTML" class="flex p-4 border-t">
-            <input type="text" name="message" placeholder="Type your message" required class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
-            <button type="submit" class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">Send</button>
+    <div id="auth-section" class="mb-4">
+        <h2 class="text-xl font-semibold mb-4">Register / Login</h2>
+        <form id="register-form" hx-post="/register" hx-target="#auth-response" hx-swap="innerHTML" class="mb-4">
+            <input type="text" name="username" placeholder="Enter your username" required
+                   class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <input type="password" name="password" placeholder="Enter your password" required
+                   class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button type="submit"
+                    class="bg-green-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">
+                Register
+            </button>
         </form>
-
-        <div id="response" class="m-4"></div>
-
-        <button hx-get="/history" hx-target="#chat-history" hx-swap="innerHTML" class="bg-blue-500 text-white rounded-lg px-4 py-2 m-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none self-center">Load History</button>
+        <form id="login-form" hx-post="/login" hx-target="#auth-response" hx-swap="innerHTML">
+            <input type="text" name="username" placeholder="Enter your username" required
+                   class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <input type="password" name="password" placeholder="Enter your password" required
+                   class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            <button type="submit"
+                    class="bg-blue-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
+                Login
+            </button>
+        </form>
+        <div id="auth-response" class="text-red-500 mt-4"></div>
     </div>
+
+    <div id="chat-section" class="hidden">
+        <form hx-post="/message/send" hx-target="#response" hx-swap="innerHTML" class="flex mb-4">
+            <label class="w-100">
+                <input type="text" name="message" placeholder="Type your message" required
+                       class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
+            </label>
+            <button type="submit"
+                    class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">
+                Send
+            </button>
+        </form>
+        <div id="response" class="mb-4"></div>
+        <button hx-get="/message/history" hx-target="#chat-history" hx-swap="innerHTML"
+                class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
+            Load History
+        </button>
+        <div id="chat-history" class="bg-gray-50 border border-gray-300 rounded-lg p-4 min-h-[100px] fade-in"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('htmx:afterRequest', function (event) {
+        console.log('htmx:afterRequest triggered');
+        console.log('Event Target:', event.target.id); // Log the target element ID
+
+        if (event.target.id === 'login-form') {
+            const responseText = event.target.innerText.trim();
+            console.log('Response Text:', responseText);
+            if (responseText === 'Registration successful!' || responseText === 'Login') {
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('chat-section').classList.remove('hidden');
+            }
+        }
+    });
+</script>
 </body>
-</html>

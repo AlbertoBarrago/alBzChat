@@ -3,7 +3,6 @@ from adapters.persistence import save_message, load_messages
 from core.entities import User, Message
 
 
-
 class ChatService:
     def __init__(self, user: User):
         self.user = user
@@ -14,5 +13,5 @@ class ChatService:
         send_message_to_network(str(message))
 
     def load_history(self):
-        print(self.user.username)
+        print("Charge history user:", self.user.username)
         return load_messages()
