@@ -5,7 +5,7 @@ from services.chat_service import ChatService
 from adapters.network_adapter import send_message_to_network
 from adapters.messages_adapter import save_message
 from core.entities import User, Message
-from utils.auth_utils import get_current_user
+from utils.auth_util import get_current_user
 
 router = APIRouter()
 

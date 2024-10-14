@@ -1,7 +1,6 @@
 """ List of Class Interface"""
 from datetime import datetime
 
-# User
 class User:
     def __init__(self, username: str):
         self.username = username
@@ -18,7 +17,6 @@ class UserLoggedIn(User):
     def __str__(self):
         return f'{self.username} {self.password}'
 
-# Messages
 class Message:
     def __init__(self, sender: User, content: str, timestamp=None):
         self.sender = sender

@@ -7,7 +7,7 @@ from core.entities import UserLoggedIn, User
 from db.create import get_db_connection
 from mysql.connector import Error
 
-from utils.auth_utils import create_access_token
+from utils.auth_util import create_access_token
 
 connection = get_db_connection()
 

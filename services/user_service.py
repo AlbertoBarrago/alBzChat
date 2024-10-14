@@ -5,7 +5,7 @@ from starlette.responses import HTMLResponse
 
 from adapters.auth_adapter import register_auth_persistence, login_auth_persistence
 from core.entities import UserLoggedIn
-from utils.auth_utils import create_access_token
+from utils.auth_util import create_access_token
 
 
 def register_user_call(user: UserLoggedIn):
