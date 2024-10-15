@@ -37,10 +37,18 @@
     </div>
 
     <div id="chat-section" class="hidden flex-grow overflow-hidden">
+        <button id="logout"
+                class="bg-red-300 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
+            Logout
+        </button>
+        <button id="history" hx-get="/message/history" hx-target="#chat-history" hx-swap="innerHTML"
+                class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
+            Load History
+        </button>
         <form id="message-form" hx-post="/message/send" hx-target="#response" hx-swap="beforeend" class="flex mb-4">
-            <label class="w-100">
+            <label class="w-full">
                 <input type="text" name="message" placeholder="Type your message" required
-                       class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
+                       class="border border-gray-300 rounded-lg p-3 w-full">
             </label>
             <button type="submit"
                     class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">
@@ -50,22 +58,14 @@
         <div class="mb-4 border border-gray-300 rounded-lg w-full flex-grow overflow-hidden">
             <ul id="response" class="list-none max-h-[300px] overflow-y-auto"></ul>
         </div>
-        <button id="logout"
-                class="bg-red-300 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
-            Logout
-        </button>
-        <button id="history" hx-get="/message/history" hx-target="#chat-history" hx-swap="innerHTML"
-                class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
-            Load History
-        </button>
         <div id="chat-history"
-             class="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-24 overflow-y-auto fade-in">
+             class="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-80 overflow-y-auto fade-in hidden">
         </div>
     </div>
 </div>
 
 <script>
-    const init = () => {
+    (function init() {
         // Set Auth Header for OAuth2
         document.body.addEventListener('htmx:configRequest', (event) => {
             const url = event.detail.path;
@@ -84,9 +84,14 @@
                 document.getElementById('chat-section').classList.remove('hidden');
             }
 
+            // Handling load history
+            document.getElementById('history').addEventListener('click', () => {
+              let el = document.getElementById('chat-history');
+              el.classList.remove('hidden');
+            })
+
             // Clear message form
             document.getElementById("message-form").addEventListener("submit", function (event) {
-                // This function will only run on the message-form submit
                 setTimeout(() => {
                     this.reset();
                 }, 500);
@@ -126,8 +131,6 @@
                 }
             }
         });
-    }
-
-    init();
+    })()
 </script>
 </body>

@@ -10,3 +10,24 @@
         opacity: 1;
     }
 }
+
+.full-screen-form {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    z-index: 1000;
+}
+
+.full-screen-form input {
+    width: 80%;
+}
+
+.full-screen-form button {
+    width: auto;
+}
