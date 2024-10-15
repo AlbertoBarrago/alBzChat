@@ -36,8 +36,18 @@ async def get_history(current_user: User = Depends(get_current_user)):
     chat_service = ChatService(current_user)
     messages = chat_service.load_history()
 
+    formatted_messages = []
+    for el in messages:
+        print(el)
+        message_data = {
+            'ddateTime': el[1].strftime('%H:%M:%S'),
+            'message': el[0]
+        }
+        formatted_messages.append(message_data)
 
-    list_items = "".join(f"<li>{msg[0]}</li>" for msg in messages)
+    print(formatted_messages)
+
+    list_items = "".join(f"<li>{msg['ddateTime']}: <b>{msg['message']}</b></li>" for msg in formatted_messages)
 
     response_html = f"<ul>{list_items}</ul>".strip().replace('"', ' ')
     return HTMLResponse(content=response_html)
