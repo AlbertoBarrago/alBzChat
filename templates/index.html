@@ -36,8 +36,8 @@
         <div id="auth-response" class="text-red-500 mt-4"></div>
     </div>
 
-    <div id="chat-section" class="hidden">
-        <form id="messageForm" hx-post="/message/send" hx-target="#response" hx-swap="innerHTML" class="flex mb-4">
+    <div id="chat-section" class="hidden flex-grow overflow-hidden">
+        <form id="message-form" hx-post="/message/send" hx-target="#response" hx-swap="beforeend" class="flex mb-4">
             <label class="w-100">
                 <input type="text" name="message" placeholder="Type your message" required
                        class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
@@ -47,7 +47,9 @@
                 Send
             </button>
         </form>
-        <div id="response" class="mb-4"></div>
+        <div class="mb-4 border border-gray-300 rounded-lg w-full flex-grow overflow-hidden">
+            <ul id="response" class="list-none max-h-[300px] overflow-y-auto"></ul>
+        </div>
         <button id="logout"
                 class="bg-red-300 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Logout
@@ -56,7 +58,9 @@
                 class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Load History
         </button>
-        <div id="chat-history" class="bg-gray-50 border border-gray-300 rounded-lg p-4 min-h-[100px] fade-in"></div>
+        <div id="chat-history"
+             class="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-24 overflow-y-auto fade-in">
+        </div>
     </div>
 </div>
 
@@ -79,15 +83,40 @@
                 document.getElementById('auth-section').classList.add('hidden');
                 document.getElementById('chat-section').classList.remove('hidden');
             }
+
+            // Clear message form
+            document.getElementById("message-form").addEventListener("submit", function (event) {
+                // This function will only run on the message-form submit
+                setTimeout(() => {
+                    this.reset();
+                }, 500);
+            });
+
+            // Clear the register and login forms after submission
+            document.getElementById("register-form").addEventListener("submit", function () {
+                setTimeout(() => {
+                    this.reset();
+                }, 500);
+            });
+
+            document.getElementById("login-form").addEventListener("submit", function () {
+                setTimeout(() => {
+                    this.reset();
+                }, 500);
+            });
+            // Logout
+            document.getElementById('logout').addEventListener('click', () => {
+                sessionStorage.removeItem('token')
+                window.location.href = '/'
+            })
         })
         // After request if is login-form, set token in session storage
         document.addEventListener('htmx:afterRequest', function (event) {
-            console.log('htmx:afterRequest triggered');
-            console.log('Event Target:', event.target.id);
+            // console.log('htmx:afterRequest triggered');
+            // console.log('Event Target:', event.target.id);
 
             if (event.target.id === 'login-form') {
                 const responseText = document.getElementById('auth-response').innerText.trim();
-                console.log('Response Text:', JSON.parse(responseText));
                 const resp = JSON.parse(responseText);
                 const token = resp.access_token;
                 if (resp && resp.access_token) {
@@ -97,18 +126,6 @@
                 }
             }
         });
-        // Clear form
-        document.getElementById("register-form" || "login-form").addEventListener("submit", function (event) {
-            event.preventDefault();
-            setTimeout(() => {
-                this.reset();
-            }, 500);
-        });
-        // Logout
-        document.getElementById('logout').addEventListener('click', () => {
-            sessionStorage.removeItem('token')
-            window.location.href = '/'
-        })
     }
 
     init();

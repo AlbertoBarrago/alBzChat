@@ -10,7 +10,7 @@ class ChatService:
 
     def send_message(self, content: str):
         message = Message(sender=self.user, content=content)
-        save_message(message, self.user)
+        save_message(message)
         send_message_to_network(str(message))
 
     def load_history(self):

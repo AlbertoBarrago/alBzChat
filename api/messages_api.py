@@ -12,7 +12,6 @@ from utils.auth_util import get_current_user
 router = APIRouter()
 
 
-# POST /send endpoint
 @router.post("/send", response_class=HTMLResponse)
 async def send_message(request: Request, current_user: User = Depends(get_current_user)):
     form = await request.form()
@@ -23,20 +22,23 @@ async def send_message(request: Request, current_user: User = Depends(get_curren
     message = Message(sender=current_user, content=message_content)
 
     send_message_to_network(message_content)
-    save_message(message, user=current_user)
+    save_message(message)
 
-    return (f'<li class="bg-white border border-gray-200 rounded-lg p-2 '
+    it_hour_and_minute = message.timestamp.strftime('%H:%M:%S')
+
+    return (f'<li class="bg-white rounded-lg p-4 m-4'
             f'shadow-sm transition duration-300 ease-in-out hover:shadow-md">'
-            f'<strong>{username}:</strong> {message.content} <em>{message.timestamp}</em></li>')
+            f'<em>{it_hour_and_minute}</em> | <strong>{username}:</strong> {message.content}</li>')
 
 
-# GET /history endpoint
 @router.get("/history", response_class=HTMLResponse)
 async def get_history(current_user: User = Depends(get_current_user)):
     chat_service = ChatService(current_user)
     messages = chat_service.load_history()
 
-    list_items = "".join(f"<li>{msg}</li>" for msg in messages)
+
+    list_items = "".join(f"<li>{msg[0]}</li>" for msg in messages)
+
     response_html = f"<ul>{list_items}</ul>".strip().replace('"', ' ')
     return HTMLResponse(content=response_html)
 

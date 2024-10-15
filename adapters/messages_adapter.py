@@ -1,6 +1,8 @@
 import os
 import json
 
+from sqlalchemy.sql.coercions import expect
+
 from core.messages_entities import Message
 from core.user_entities import User
 from datetime import datetime
@@ -11,16 +13,14 @@ connection = get_db_connection()
 FILE_PATH = 'chat_history.json'
 
 
-def save_message(message: Message, user: User):
+def save_message(message: Message):
     """ Persist message on db """
-    print(message, user)
+    user_id = message['sender']['user_id']
+    message_content = message['content']
     try:
         cursor = connection.cursor()
         query = "INSERT INTO messages (user_id, content) VALUES (%s, %s)"
-        cursor.execute(query, (user, message))
-        operation = cursor.lastrowid
-        if operation:
-            print(operation)
+        cursor.execute(query, (user_id, message_content))
         connection.commit()
         resp = {
             "message": "Message stored"
@@ -35,12 +35,13 @@ def save_message(message: Message, user: User):
 
 
 def load_messages(user: User):
-    # TODO: retrieve message after make the call
-    if not os.path.exists(FILE_PATH):
-        return []
-
-    with open(FILE_PATH, 'r') as file:
-        history = json.load(file)
-        return [Message(sender=msg['sender'], content=msg['content'],
-                        timestamp=datetime.fromisoformat(msg['timestamp']))
-                for msg in history]
+    """ Load messages from db """
+    id_request = user['user_id']
+    try:
+        cursor = connection.cursor()
+        query = "SELECT content, timestamp FROM messages WHERE user_id = %s ORDER BY id DESC;"
+        cursor.execute(query, (id_request,))
+        result = cursor.fetchall()
+        return result
+    except Exception as e:
+        print(f"The error '{e}' occurred")

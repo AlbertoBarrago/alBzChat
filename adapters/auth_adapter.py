@@ -58,7 +58,6 @@ def login_auth_persistence(user: User):
         query = "SELECT id, username FROM users WHERE username = %s AND password = %s"
         cursor.execute(query, (user.username, hashed_password))
         result = cursor.fetchone()
-        print(result)
         if result:
             access_token = create_access_token(
                 data={"user_id": result[0], "username": result[1]}, expires_delta=timedelta(hours=1)

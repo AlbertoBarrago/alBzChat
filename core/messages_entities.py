@@ -9,5 +9,8 @@ class Message:
         self.content = content
         self.timestamp = timestamp or datetime.now()
 
+    def __getitem__(self, key):
+        return getattr(self, key)
+
     def __str__(self):
         return f"[{self.timestamp}] {self.sender}: {self.content}"
