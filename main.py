@@ -15,7 +15,7 @@ app.include_router(message_router, prefix="/message")
 
 if __name__ == "__main__":
     socket_thread = Thread(target=start_socket_server)
-    socket_thread.start() #Start socker
+    socket_thread.start()
 
-    start_fastapi() #Start Fastapi
+    start_fastapi()
 
