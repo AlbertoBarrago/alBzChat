@@ -42,7 +42,6 @@ def create_database_and_table():
             )
         """)
 
-        print("Database and tables created successfully")
     except Error as e:
         print(f"The error '{e}' occurred.")
     finally:
@@ -58,5 +57,4 @@ def get_db_connection():
         password=os.getenv("DB_PASSWORD"),
         database=os.getenv("DB_NAME"),
     )
-    print("Database and tables connect successfully")
     return connection

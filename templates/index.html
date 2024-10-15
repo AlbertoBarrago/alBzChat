@@ -11,23 +11,44 @@
 <div class="container mx-auto max-w-lg bg-white rounded-lg shadow-lg p-6">
     <h1 class="text-2xl font-bold text-center mb-6">Chat Application</h1>
 
+    <!-- LOGIN || SUBSCRIPTION -->
     <div id="auth-section" class="mb-4">
         <h2 class="text-xl font-semibold mb-4">Register / Login</h2>
-        <form id="register-form" hx-post="/auth/register" hx-target="#auth-response" hx-swap="innerHTML" class="mb-4">
-            <input type="text" name="username" placeholder="Enter your username" required
-                   class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-            <input type="password" name="password" placeholder="Enter your password" required
-                   class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+        <div class="flex mb-4">
+            <button class="tab active flex-1 py-2 bg-green-500 text-white rounded-l-lg transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none"
+                    onclick="showForm('register')">
+                Register
+            </button>
+            <button class="tab flex-1 py-2 bg-gray-300 text-gray-700 rounded-r-lg transition duration-300 ease-in-out hover:bg-gray-400 focus:outline-none"
+                    onclick="showForm('login')">
+                Login
+            </button>
+        </div>
+        <form id="register-form" hx-post="/auth/register" hx-target="#auth-response" hx-swap="innerHTML"
+              class="form-container">
+            <label>
+                <input type="text" name="username" placeholder="Enter your username" required
+                       class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            </label>
+            <label>
+                <input type="password" name="password" placeholder="Enter your password" required
+                       class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            </label>
             <button type="submit"
                     class="bg-green-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">
                 Register
             </button>
         </form>
-        <form id="login-form" hx-post="/auth/login" hx-target="#auth-response" hx-swap="innerHTML">
-            <input type="text" name="username" placeholder="Enter your username" required
-                   class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
-            <input type="password" name="password" placeholder="Enter your password" required
-                   class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+        <form id="login-form" hx-post="/auth/login" hx-target="#auth-response" hx-swap="innerHTML"
+              class="form-container hidden">
+            <label>
+                <input type="text" name="username" placeholder="Enter your username" required
+                       class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            </label>
+            <label>
+                <input type="password" name="password" placeholder="Enter your password" required
+                       class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
+            </label>
             <button type="submit"
                     class="bg-blue-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
                 Login
@@ -36,18 +57,9 @@
         <div id="auth-response" class="text-red-500 mt-4"></div>
     </div>
 
-    <div id="chat-section" class="hidden">
-        <form id="messageForm" hx-post="/message/send" hx-target="#response" hx-swap="innerHTML" class="flex mb-4">
-            <label class="w-100">
-                <input type="text" name="message" placeholder="Type your message" required
-                       class="border border-gray-300 rounded-lg p-3 flex-grow focus:outline-none focus:ring-2 focus:ring-green-500">
-            </label>
-            <button type="submit"
-                    class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">
-                Send
-            </button>
-        </form>
-        <div id="response" class="mb-4"></div>
+    <!-- CHAT WRAPPER-->
+    <div id="chat-section" class="hidden flex-grow overflow-hidden">
+        <!-- ACTION LIST-->
         <button id="logout"
                 class="bg-red-300 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Logout
@@ -56,12 +68,80 @@
                 class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Load History
         </button>
-        <div id="chat-history" class="bg-gray-50 border border-gray-300 rounded-lg p-4 min-h-[100px] fade-in"></div>
+        <!-- CHAT INPUT-->
+        <form id="message-form" hx-post="/message/send" hx-target="#response" hx-swap="beforeend" class="flex mb-4">
+            <label class="w-full">
+                <input type="text" name="message" placeholder="Type your message" required
+                       class="border border-gray-300 rounded-lg p-3 w-full">
+            </label>
+            <button type="submit"
+                    class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">
+                Send
+            </button>
+        </form>
+        <!-- CHAT PANEL-->
+        <div id="response"
+             class="mb-4 border border-gray-300 rounded-lg w-full max-h-80 flex-grow overflow-y-auto">
+        </div>
+        <!-- HISTORY -->
+        <div id="chat-history"
+             class="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-80 overflow-y-auto fade-in hidden">
+        </div>
     </div>
 </div>
 
 <script>
-    const init = () => {
+    // SETUP INIT
+    (function init() {
+        // Verify on load if the user is logged in
+        document.addEventListener("DOMContentLoaded", () => {
+            const token = sessionStorage.getItem("token");
+
+            if (token) {
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('chat-section').classList.remove('hidden');
+            }
+
+            document.addEventListener('htmx:afterRequest', (event) => {
+                const response = document.getElementById('response');
+                const lastMessage = response.lastElementChild;
+                if (lastMessage) {
+                    console.log(lastMessage);
+                    window.lastTimestamp = lastMessage.getAttribute('data-timestamp');
+                }
+            });
+
+            // Handling load history
+            document.getElementById('history').addEventListener('click', () => {
+                let el = document.getElementById('chat-history');
+                el.classList.remove('hidden');
+            })
+
+            // Clear message form
+            document.getElementById("message-form").addEventListener("submit", function (event) {
+                setTimeout(() => {
+                    this.reset();
+                }, 500);
+            });
+
+            // Clear the register and login forms after submission
+            document.getElementById("register-form").addEventListener("submit", function () {
+                setTimeout(() => {
+                    this.reset();
+                }, 500);
+            });
+
+            document.getElementById("login-form").addEventListener("submit", function () {
+                setTimeout(() => {
+                    this.reset();
+                }, 500);
+            });
+            // Logout
+            document.getElementById('logout').addEventListener('click', () => {
+                sessionStorage.removeItem('token')
+                window.location.href = '/'
+            })
+        })
         // Set Auth Header for OAuth2
         document.body.addEventListener('htmx:configRequest', (event) => {
             const url = event.detail.path;
@@ -71,23 +151,13 @@
                 event.detail.headers['Authorization'] = `Bearer ${token}`;
             }
         });
-        // Verify on load if the user is logged in
-        document.addEventListener("DOMContentLoaded", () => {
-            const token = sessionStorage.getItem("token");
-
-            if (token) {
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('chat-section').classList.remove('hidden');
-            }
-        })
         // After request if is login-form, set token in session storage
-        document.addEventListener('htmx:afterRequest', function (event) {
-            console.log('htmx:afterRequest triggered');
-            console.log('Event Target:', event.target.id);
+        document.addEventListener('htmx:afterRequest', (event) => {
+            // console.log('htmx:afterRequest triggered');
+            // console.log('Event Target:', event.target.id);
 
             if (event.target.id === 'login-form') {
                 const responseText = document.getElementById('auth-response').innerText.trim();
-                console.log('Response Text:', JSON.parse(responseText));
                 const resp = JSON.parse(responseText);
                 const token = resp.access_token;
                 if (resp && resp.access_token) {
@@ -97,20 +167,29 @@
                 }
             }
         });
-        // Clear form
-        document.getElementById("register-form" || "login-form").addEventListener("submit", function (event) {
-            event.preventDefault();
-            setTimeout(() => {
-                this.reset();
-            }, 500);
-        });
-        // Logout
-        document.getElementById('logout').addEventListener('click', () => {
-            sessionStorage.removeItem('token')
-            window.location.href = '/'
-        })
-    }
+    })()
 
-    init();
+    // SHOW FORM - F() FOR HANDLE TAB
+    function showForm(formType) {
+        const registerForm = document.getElementById('register-form');
+        const loginForm = document.getElementById('login-form');
+        const tabs = document.querySelectorAll('.tab');
+
+        if (formType === 'register') {
+            registerForm.classList.remove('hidden');
+            loginForm.classList.add('hidden');
+            tabs[0].classList.add('bg-green-500', 'text-white');
+            tabs[0].classList.remove('bg-gray-300', 'text-gray-700');
+            tabs[1].classList.add('bg-gray-300', 'text-gray-700');
+            tabs[1].classList.remove('bg-green-500', 'text-white');
+        } else {
+            registerForm.classList.add('hidden');
+            loginForm.classList.remove('hidden');
+            tabs[1].classList.add('bg-blue-500', 'text-white');
+            tabs[1].classList.remove('bg-gray-300', 'text-gray-700');
+            tabs[0].classList.add('bg-gray-300', 'text-gray-700');
+            tabs[0].classList.remove('bg-blue-500', 'text-white');
+        }
+    }
 </script>
 </body>
