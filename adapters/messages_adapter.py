@@ -45,3 +45,20 @@ def load_messages(user: User):
         return result
     except Exception as e:
         print(f"The error '{e}' occurred")
+
+
+def get_all_messages():
+    """ Get all messages from db for chat user """
+    try:
+        cursor = connection.cursor()
+        query = """
+                  SELECT messages.content, messages.timestamp, users.username
+                  FROM messages
+                  JOIN users ON messages.user_id = users.id
+                  ORDER BY messages.id DESC;
+              """
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    except Exception as e:
+        print(f"The error '{e}' occurred")

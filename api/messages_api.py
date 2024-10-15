@@ -5,7 +5,7 @@ from fastapi.responses import HTMLResponse
 from core.messages_entities import Message
 from services.chat_service import ChatService
 from adapters.network_adapter import send_message_to_network
-from adapters.messages_adapter import save_message
+from adapters.messages_adapter import save_message, get_all_messages
 from core.user_entities import User
 from utils.auth_util import get_current_user
 
@@ -20,15 +20,27 @@ async def send_message(request: Request, current_user: User = Depends(get_curren
     message_content = form.get("message")
 
     message = Message(sender=current_user, content=message_content)
+    send_message_to_network(message_content, message)
 
-    send_message_to_network(message_content)
-    save_message(message)
+    # TODO: Add get message from the others users
 
-    it_hour_and_minute = message.timestamp.strftime('%H:%M:%S')
+    resp = get_all_messages()
+    formatted_messages = []
+    print(resp)
+    for el in resp:
+        message_data = {
+            'message': el[0],
+            'ddateTime': el[1].strftime('%H:%M:%S'),
+            'sender': el[2],
+        }
+        formatted_messages.append(message_data)
 
-    return (f'<li class="bg-white rounded-lg p-4 m-4'
-            f'shadow-sm transition duration-300 ease-in-out hover:shadow-md">'
-            f'<em>{it_hour_and_minute}</em> | <strong>{username}:</strong> {message.content}</li>')
+    list_items = "".join(
+        f"<li class='bg-white rounded-lg p-4 m-4 shadow-sm transition duration-300 ease-in-out hover:shadow-md'>"
+        f"{msg['ddateTime']} - {msg['sender']}: <b>{msg['message']}</b></li>" for msg in formatted_messages)
+
+    response_html = f"<ul>{list_items}</ul>"
+    return HTMLResponse(content=response_html)
 
 
 @router.get("/history", response_class=HTMLResponse)
@@ -44,10 +56,9 @@ async def get_history(current_user: User = Depends(get_current_user)):
         }
         formatted_messages.append(message_data)
 
-
     list_items = "".join(f"<li>{msg['ddateTime']}: <b>{msg['message']}</b></li>" for msg in formatted_messages)
 
-    response_html = f"<ul>{list_items}</ul>".strip().replace('"', ' ')
+    response_html = f"<ul>{list_items}</ul>"
     return HTMLResponse(content=response_html)
 
 

@@ -11,7 +11,7 @@
 <div class="container mx-auto max-w-lg bg-white rounded-lg shadow-lg p-6">
     <h1 class="text-2xl font-bold text-center mb-6">Chat Application</h1>
 
-    <!-- Login or Subscribe-->
+    <!-- LOGIN || SUBSCRIPTION -->
     <div id="auth-section" class="mb-4">
         <h2 class="text-xl font-semibold mb-4">Register / Login</h2>
         <div class="flex mb-4">
@@ -57,8 +57,9 @@
         <div id="auth-response" class="text-red-500 mt-4"></div>
     </div>
 
-    <!-- Chat Section-->
+    <!-- CHAT WRAPPER-->
     <div id="chat-section" class="hidden flex-grow overflow-hidden">
+         <!-- ACTION LIST-->
         <button id="logout"
                 class="bg-red-300 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Logout
@@ -67,6 +68,7 @@
                 class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Load History
         </button>
+         <!-- CHAT INPUT-->
         <form id="message-form" hx-post="/message/send" hx-target="#response" hx-swap="beforeend" class="flex mb-4">
             <label class="w-full">
                 <input type="text" name="message" placeholder="Type your message" required
@@ -77,9 +79,11 @@
                 Send
             </button>
         </form>
-        <div class="mb-4 border border-gray-300 rounded-lg w-full flex-grow overflow-hidden">
-            <ul id="response" class="list-none max-h-[300px] overflow-y-auto"></ul>
+        <!-- CHAT PANEL-->
+        <div id="response"
+             class="mb-4 border border-gray-300 rounded-lg w-full max-h-80 flex-grow overflow-y-auto">
         </div>
+        <!-- HISTORY -->
         <div id="chat-history"
              class="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-80 overflow-y-auto fade-in hidden">
         </div>
@@ -87,9 +91,9 @@
 </div>
 
 <script>
-    // setup init
+    // SETUP INIT
     (function init() {
-         // Verify on load if the user is logged in
+        // Verify on load if the user is logged in
         document.addEventListener("DOMContentLoaded", () => {
             const token = sessionStorage.getItem("token");
 
@@ -155,7 +159,8 @@
             }
         });
     })()
-    // function for tab
+
+    // SHOW FORM - F() FOR HANDLE TAB
     function showForm(formType) {
         const registerForm = document.getElementById('register-form');
         const loginForm = document.getElementById('login-form');
