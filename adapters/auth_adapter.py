@@ -22,7 +22,6 @@ def register_auth_persistence(user: User):
         existing_user = cursor.fetchone()
 
         if existing_user:
-            print("User already exists!")
             cursor.close()
             resp = {
                 "user": None,
@@ -34,7 +33,6 @@ def register_auth_persistence(user: User):
         cursor.execute(query, (username, hashed_password))
         connection.commit()
 
-        print("User registered successfully.")
         resp = {
             "message": "User registered successfully.",
         }

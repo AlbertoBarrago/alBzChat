@@ -38,14 +38,12 @@ async def get_history(current_user: User = Depends(get_current_user)):
 
     formatted_messages = []
     for el in messages:
-        print(el)
         message_data = {
             'ddateTime': el[1].strftime('%H:%M:%S'),
             'message': el[0]
         }
         formatted_messages.append(message_data)
 
-    print(formatted_messages)
 
     list_items = "".join(f"<li>{msg['ddateTime']}: <b>{msg['message']}</b></li>" for msg in formatted_messages)
 
