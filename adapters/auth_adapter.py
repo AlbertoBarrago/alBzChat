@@ -3,7 +3,7 @@ import hashlib
 from datetime import timedelta
 
 from fastapi import HTTPException
-from core.entities import UserLoggedIn, User
+from core.user_entities import UserLoggedIn, User
 from db.create import get_db_connection
 from mysql.connector import Error
 
@@ -12,7 +12,7 @@ from utils.auth_util import create_access_token
 connection = get_db_connection()
 
 
-def register_auth_persistence(user: UserLoggedIn):
+def register_auth_persistence(user: User):
     username = user.username
     hashed_password = hashlib.sha256(user.password.encode()).hexdigest()
     try:
@@ -47,7 +47,7 @@ def register_auth_persistence(user: UserLoggedIn):
         return resp
 
 
-def login_auth_persistence(user: UserLoggedIn):
+def login_auth_persistence(user: User):
     if connection is None:
         return {"message": "Database connection is not established."}
 
@@ -55,13 +55,13 @@ def login_auth_persistence(user: UserLoggedIn):
 
     try:
         cursor = connection.cursor()
-        query = "SELECT username FROM users WHERE username = %s AND password = %s"
+        query = "SELECT id, username FROM users WHERE username = %s AND password = %s"
         cursor.execute(query, (user.username, hashed_password))
         result = cursor.fetchone()
-
+        print(result)
         if result:
             access_token = create_access_token(
-                data={"username": result[0]}, expires_delta=timedelta(hours=1)
+                data={"user_id": result[0], "username": result[1]}, expires_delta=timedelta(hours=1)
             )
             return {
                 "access_token": access_token,

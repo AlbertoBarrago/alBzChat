@@ -1,6 +1,7 @@
 from adapters.network_adapter import send_message_to_network
 from adapters.messages_adapter import save_message, load_messages
-from core.entities import User, Message
+from core.messages_entities import Message
+from core.user_entities import User
 
 
 class ChatService:
