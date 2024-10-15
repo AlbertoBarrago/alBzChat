@@ -27,7 +27,7 @@ async def make_call_and_handle_result_history(chat_service):
     :param chat_service:
     :return:
     """
-    messages = chat_service.load_history()
+    messages = chat_service.load_history_impl()
     formatted_messages = []
     for el in messages:
         message_data = {
