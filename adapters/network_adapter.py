@@ -1,7 +1,7 @@
 import socket
 from threading import Thread
 
-from adapters.messages_adapter import save_message
+from adapters.messages_adapter import save_message, get_all_messages
 from core.messages_entities import Message
 
 HOST = 'localhost'
@@ -54,6 +54,7 @@ def send_message_to_network(message: str, message_dto: Message):
         s.sendall(message.encode('utf-8'))
         data = s.recv(1024)
         save_message(message_dto)
+        get_all_messages()
     print('Server response:', data.decode('utf-8'))
 
 

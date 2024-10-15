@@ -1,11 +1,5 @@
-import os
-import json
-
-from sqlalchemy.sql.coercions import expect
-
 from core.messages_entities import Message
 from core.user_entities import User
-from datetime import datetime
 from db.create import get_db_connection
 
 connection = get_db_connection()
@@ -62,3 +56,27 @@ def get_all_messages():
         return result
     except Exception as e:
         print(f"The error '{e}' occurred")
+
+
+def get_new_messages(last_timestamp: float):
+    """Get only new messages from the database after the provided timestamp."""
+    try:
+        cursor = connection.cursor()
+        query = """
+            SELECT messages.content, messages.timestamp, users.username
+            FROM messages
+            JOIN users ON messages.user_id = users.id
+            WHERE messages.timestamp > %s
+            ORDER BY messages.id;
+        """
+        cursor.execute(query, (last_timestamp,))
+        result = cursor.fetchall()
+
+        messages = [
+            {"content": row[0], "timestamp": row[1], "username": row[2]}
+            for row in result
+        ]
+        return messages
+    except Exception as e:
+        print(f"The error '{e}' occurred")
+        return []

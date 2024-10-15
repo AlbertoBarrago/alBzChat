@@ -59,7 +59,7 @@
 
     <!-- CHAT WRAPPER-->
     <div id="chat-section" class="hidden flex-grow overflow-hidden">
-         <!-- ACTION LIST-->
+        <!-- ACTION LIST-->
         <button id="logout"
                 class="bg-red-300 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Logout
@@ -68,7 +68,7 @@
                 class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
             Load History
         </button>
-         <!-- CHAT INPUT-->
+        <!-- CHAT INPUT-->
         <form id="message-form" hx-post="/message/send" hx-target="#response" hx-swap="beforeend" class="flex mb-4">
             <label class="w-full">
                 <input type="text" name="message" placeholder="Type your message" required
@@ -101,6 +101,15 @@
                 document.getElementById('auth-section').classList.add('hidden');
                 document.getElementById('chat-section').classList.remove('hidden');
             }
+
+            document.addEventListener('htmx:afterRequest', (event) => {
+                const response = document.getElementById('response');
+                const lastMessage = response.lastElementChild;
+                if (lastMessage) {
+                    console.log(lastMessage);
+                    window.lastTimestamp = lastMessage.getAttribute('data-timestamp');
+                }
+            });
 
             // Handling load history
             document.getElementById('history').addEventListener('click', () => {

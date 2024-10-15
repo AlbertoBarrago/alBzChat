@@ -1,10 +1,10 @@
-async def make_call_and_handle_result(method_to_get_data):
-    """
-    Fetch messages for all users in the instance
-    :param method_to_get_data:
-    :return:
-    """
-    resp = method_to_get_data()
+import json
+from datetime import datetime
+
+from adapters.messages_adapter import get_new_messages
+
+
+async def prepare(resp):
     formatted_messages = []
     for el in resp:
         message_data = {
@@ -20,6 +20,50 @@ async def make_call_and_handle_result(method_to_get_data):
     return response_html
 
 
+async def prepare_dict(resp):
+    formatted_messages = []
+    for el in resp:
+        message_data = {
+            'message': el['content'],
+            'ddateTime': el['timestamp'].strftime('%H:%M:%S'),
+            'sender': el['username'],
+        }
+        formatted_messages.append(message_data)
+
+    return json.dumps(formatted_messages)
+
+
+async def make_call_and_handle_result(method_to_get_data):
+    """
+    Fetch messages for all users in the instance
+    :param method_to_get_data:
+    :return:
+    """
+    resp = method_to_get_data()
+
+    return await prepare(resp)
+
+
+async def make_call_and_handle_all_result(last_timestamp):
+    """
+    Fetch messages for all users in the instance.
+    :param last_timestamp: The last timestamp of messages received (can be Unix timestamp or datetime).
+    :return: A JSON response with new messages since last_timestamp.
+    """
+
+    messages = get_new_messages(last_timestamp)
+    print(len(messages))
+
+    if isinstance(last_timestamp, (int, float)):
+        last_timestamp = datetime.fromtimestamp(last_timestamp)
+
+    new_messages = [
+        msg for msg in messages if isinstance(msg['timestamp'], datetime) and msg['timestamp'] > last_timestamp
+    ]
+    print(len(new_messages))
+
+    return await prepare_dict(new_messages)
+
 
 async def make_call_and_handle_result_history(chat_service):
     """
@@ -27,7 +71,7 @@ async def make_call_and_handle_result_history(chat_service):
     :param chat_service:
     :return:
     """
-    messages = chat_service.load_history_impl()
+    messages = chat_service.load_history()
     formatted_messages = []
     for el in messages:
         message_data = {

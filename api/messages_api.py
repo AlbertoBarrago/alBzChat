@@ -1,16 +1,25 @@
 import uvicorn
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse
 
 from core.messages_entities import Message
 from services.chat_service import ChatService
 from adapters.network_adapter import send_message_to_network
-from adapters.messages_adapter import get_all_messages
+from adapters.messages_adapter import get_new_messages, get_all_messages
 from core.user_entities import User
-from services.message_service import make_call_and_handle_result, make_call_and_handle_result_history
+from services.message_service import make_call_and_handle_all_result, make_call_and_handle_result_history, \
+    make_call_and_handle_result
 from utils.auth_util import get_current_user
 
 router = APIRouter()
+
+
+@router.post("/messages")
+async def get_messages(request: Request):
+    body = await request.json()
+    last_timestamp = body.get("last_timestamp", 0.0)
+    response_json = await make_call_and_handle_all_result(last_timestamp)
+    return HTMLResponse(content=response_json)
 
 
 @router.post("/send", response_class=HTMLResponse)
