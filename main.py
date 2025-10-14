@@ -31,15 +31,12 @@ def setup_database():
 if __name__ == "__main__":
     setup_database()
 
-    # Start the WebSocket server
     logger.info("Starting WebSocket server thread...")
     socket_thread = Thread(target=start_socket_server, daemon=True)
     socket_thread.start()
 
-    # Give the WebSocket server a moment to start
     time.sleep(2)
     logger.info("WebSocket thread started")
 
-    # Start the FastAPI server
     logger.info("Starting FastAPI server...")
     start_fastapi()

@@ -6,10 +6,60 @@
     <title>Chat App</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <script src="https://unpkg.com/htmx.org@1.9.2"></script>
+    <style>
+        .error-message {
+            animation: slideIn 0.3s ease-out;
+        }
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+        }
+        /* Loading spinner */
+        .htmx-indicator {
+            display: none;
+        }
+        .htmx-request .htmx-indicator {
+            display: inline-block;
+        }
+        .spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
 </head>
 <body class="bg-gray-100 p-5">
 <div class="container mx-auto max-w-lg bg-white rounded-lg shadow-lg p-6">
     <h1 class="text-2xl font-bold text-center mb-6">Chat Application</h1>
+
+    <!-- GLOBAL ERROR NOTIFICATION -->
+    <div id="global-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg error-message">
+        <div class="flex justify-between items-center">
+            <span id="global-error-message"></span>
+            <button onclick="hideGlobalError()" class="text-red-700 hover:text-red-900 font-bold ml-2 text-xl">×</button>
+        </div>
+    </div>
 
     <!-- LOGIN || SUBSCRIPTION -->
     <div id="auth-section" class="mb-4">
@@ -24,7 +74,11 @@
                 Login
             </button>
         </div>
-        <form id="register-form" hx-post="/auth/register" hx-target="#auth-response" hx-swap="innerHTML"
+        <form id="register-form"
+              hx-post="/auth/register"
+              hx-target="#auth-response"
+              hx-swap="innerHTML"
+              hx-indicator="#register-spinner"
               class="form-container">
             <label>
                 <input type="text" name="username" placeholder="Enter your username" required
@@ -35,11 +89,18 @@
                        class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
             </label>
             <button type="submit"
-                    class="bg-green-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">
-                Register
+                    class="bg-green-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none flex items-center justify-center w-full">
+                <span class="htmx-indicator" id="register-spinner">
+                    <span class="spinner inline-block mr-2"></span>
+                </span>
+                <span>Register</span>
             </button>
         </form>
-        <form id="login-form" hx-post="/auth/login" hx-target="#auth-response" hx-swap="innerHTML"
+        <form id="login-form"
+              hx-post="/auth/login"
+              hx-target="#auth-response"
+              hx-swap="innerHTML"
+              hx-indicator="#login-spinner"
               class="form-container hidden">
             <label>
                 <input type="text" name="username" placeholder="Enter your username" required
@@ -50,8 +111,11 @@
                        class="border border-gray-300 rounded-lg p-3 w-full mb-2 focus:outline-none focus:ring-2 focus:ring-green-500">
             </label>
             <button type="submit"
-                    class="bg-blue-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
-                Login
+                    class="bg-blue-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none flex items-center justify-center w-full">
+                <span class="htmx-indicator" id="login-spinner">
+                    <span class="spinner inline-block mr-2"></span>
+                </span>
+                <span>Login</span>
             </button>
         </form>
         <div id="auth-response" class="text-red-500 mt-4"></div>
@@ -59,31 +123,50 @@
 
     <!-- CHAT WRAPPER-->
     <div id="chat-section" class="hidden flex-grow overflow-hidden">
-        <!-- ACTION LIST-->
-        <button id="logout"
-                class="bg-red-300 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
-            Logout
-        </button>
-        <button id="history" hx-get="/message/history" hx-target="#chat-history" hx-swap="innerHTML"
-                class="bg-blue-500 text-white rounded-lg px-4 py-2 mb-4 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none">
-            Load History
-        </button>
+        <div class="mb-4 flex gap-2">
+            <button id="logout"
+                    class="bg-red-300 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-red-400 focus:outline-none">
+                Logout
+            </button>
+            <button id="history"
+                    hx-get="/message/history"
+                    hx-target="#chat-history"
+                    hx-swap="innerHTML"
+                    hx-indicator="#history-spinner"
+                    class="bg-blue-500 text-white rounded-lg px-4 py-2 transition duration-300 ease-in-out hover:bg-blue-400 focus:outline-none flex items-center">
+                <span class="htmx-indicator" id="history-spinner">
+                    <span class="spinner inline-block mr-2"></span>
+                </span>
+                <span>Load History</span>
+            </button>
+        </div>
+
         <!-- CHAT INPUT-->
-        <form id="message-form" hx-post="/message/send" hx-target="#response" hx-swap="beforeend" class="flex mb-4">
+        <form id="message-form"
+              hx-post="/message/send"
+              hx-target="#response"
+              hx-swap="beforeend"
+              hx-indicator="#send-spinner"
+              class="flex mb-4">
             <label class="w-full">
                 <input type="text" name="message" placeholder="Type your message" required
                        class="border border-gray-300 rounded-lg p-3 w-full">
             </label>
             <button type="submit"
-                    class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none">
-                Send
+                    class="ml-3 bg-green-500 text-white rounded-lg px-4 py-3 transition duration-300 ease-in-out hover:bg-green-400 focus:outline-none flex items-center">
+                <span class="htmx-indicator" id="send-spinner">
+                    <span class="spinner inline-block mr-2"></span>
+                </span>
+                <span>Send</span>
             </button>
         </form>
-        <!-- CHAT PANEL-->
+
+        <div id="chat-error" class="hidden mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg"></div>
+
         <div id="response"
              class="mb-4 border border-gray-300 rounded-lg w-full max-h-80 flex-grow overflow-y-auto p-3">
         </div>
-        <!-- HISTORY -->
+
         <div id="chat-history"
              class="bg-gray-50 border border-gray-300 rounded-lg p-4 max-h-80 overflow-y-auto fade-in hidden">
         </div>
@@ -91,28 +174,85 @@
 </div>
 
 <script>
-    // SETUP INIT
-    (function init() {
-        // WebSocket variable
-        let websocket = null;
+    function showGlobalError(message, duration = 5000) {
+        const errorDiv = document.getElementById('global-error');
+        const errorMessage = document.getElementById('global-error-message');
 
-        // Function to load all messages on enter
+        errorMessage.textContent = message;
+        errorDiv.classList.remove('hidden', 'fade-out');
+
+        if (duration > 0) {
+            setTimeout(() => {
+                hideGlobalError();
+            }, duration);
+        }
+    }
+
+    function hideGlobalError() {
+        const errorDiv = document.getElementById('global-error');
+        errorDiv.classList.add('fade-out');
+        setTimeout(() => {
+            errorDiv.classList.add('hidden');
+        }, 300);
+    }
+
+    function showChatError(message, duration = 5000) {
+        const errorDiv = document.getElementById('chat-error');
+        errorDiv.textContent = message;
+        errorDiv.classList.remove('hidden', 'fade-out');
+
+        if (duration > 0) {
+            setTimeout(() => {
+                hideChatError();
+            }, duration);
+        }
+    }
+
+    function hideChatError() {
+        const errorDiv = document.getElementById('chat-error');
+        errorDiv.classList.add('fade-out');
+        setTimeout(() => {
+            errorDiv.classList.add('hidden');
+        }, 300);
+    }
+
+    (function init() {
+        let websocket = null;
+        let reconnectAttempts = 0;
+        const maxReconnectAttempts = 5;
+
         function loadAllMessages() {
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+                showGlobalError('Authentication required. Please log in again.');
+                return;
+            }
+
             fetch('/message/all-messages', {
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`
+                    'Authorization': `Bearer ${token}`
                 }
             })
-            .then(response => response.text())
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Session expired. Please log in again.');
+                    }
+                    throw new Error(`Server error: ${response.status}`);
+                }
+                return response.text();
+            })
             .then(html => {
                 document.getElementById('response').innerHTML = html;
                 showDeleteButtons();
                 scrollToBottom();
             })
-            .catch(error => console.error('Error loading messages:', error));
+            .catch(error => {
+                showChatError(`Error loading messages: ${error.message}`);
+                console.error('Error loading messages:', error);
+            });
         }
 
-        // Function to show delete buttons only for user's messages
         function showDeleteButtons() {
             const token = sessionStorage.getItem("token");
             if (token) {
@@ -128,142 +268,238 @@
                     });
                 } catch (e) {
                     console.error('Error parsing token:', e);
+                    showGlobalError('Invalid session. Please log in again.');
                 }
             }
         }
 
-        // Function to scroll to bottom
         function scrollToBottom() {
             const messageContainer = document.getElementById("response");
-            messageContainer.scrollTop = messageContainer.scrollHeight;
+            if (messageContainer) {
+                messageContainer.scrollTop = messageContainer.scrollHeight;
+            }
         }
 
-        // Function to delete message
         function deleteMessage(messageId) {
+            const token = sessionStorage.getItem("token");
+            if (!token) {
+                showChatError('Authentication required.');
+                return;
+            }
+
             fetch(`/message/delete/${messageId}`, {
                 method: 'DELETE',
                 headers: {
-                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`
+                    'Authorization': `Bearer ${token}`
                 }
             })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        // Remove message from UI
-                        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
-                        if (messageElement) {
-                            messageElement.remove();
-                        }
-
-                        // Broadcast deletion to other clients
-                        if (websocket && websocket.readyState === WebSocket.OPEN) {
-                            const deleteData = {
-                                type: 'delete',
-                                messageId: messageId
-                            };
-                            websocket.send(JSON.stringify(deleteData));
-                        }
-                    } else {
-                        alert('Error deleting message: ' + result.message);
+            .then(response => {
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        throw new Error('Session expired. Please log in again.');
                     }
-                })
-                .catch(error => {
-                    console.error('Error deleting message:', error);
-                    alert('Error deleting message');
-                });
+                    if (response.status === 403) {
+                        throw new Error('You are not authorized to delete this message.');
+                    }
+                    throw new Error(`Failed to delete message: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(result => {
+                if (result.success) {
+                    const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                    if (messageElement) {
+                        messageElement.remove();
+                    }
+
+                    if (websocket && websocket.readyState === WebSocket.OPEN) {
+                        const deleteData = {
+                            type: 'delete',
+                            messageId: messageId
+                        };
+                        websocket.send(JSON.stringify(deleteData));
+                    }
+                } else {
+                    showChatError(`Error deleting message: ${result.message || 'Unknown error'}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error deleting message:', error);
+                showChatError(error.message);
+            });
         }
 
         function initWebSocket() {
             const HOST = "ws://localhost:65432";
-            websocket = new WebSocket(HOST);
 
-            websocket.addEventListener("open", () => {
-                console.log("Connected to the WebSocket server.");
-            });
+            try {
+                websocket = new WebSocket(HOST);
 
-            websocket.addEventListener("message", (event) => {
-                console.log("Message received: ", event.data);
+                websocket.addEventListener("open", () => {
+                    console.log("Connected to the WebSocket server.");
+                    reconnectAttempts = 0;
+                    hideChatError();
+                });
 
-                try {
-                    // Try to parse as JSON
-                    const messageData = JSON.parse(event.data);
-                    displayMessage(messageData.user, messageData.content);
-                } catch (e) {
-                    // Handle plain text messages
-                    displayMessage("Server", event.data);
-                }
-            });
+                websocket.addEventListener("message", (event) => {
+                    console.log("Message received: ", event.data);
 
-            websocket.addEventListener("close", () => {
-                console.log("Disconnected from WebSocket server.");
-                setTimeout(initWebSocket, 3000);
-            });
+                    try {
+                        const messageData = JSON.parse(event.data);
 
-            websocket.addEventListener("error", (error) => {
-                console.error("WebSocket error: ", error);
-            });
+                        if (messageData.type === 'delete' && messageData.messageId) {
+                            const messageElement = document.querySelector(`[data-message-id="${messageData.messageId}"]`);
+                            if (messageElement) {
+                                messageElement.remove();
+                            }
+                        } else if (messageData.user && messageData.content) {
+                            displayMessage(messageData.user, messageData.content);
+                        }
+                    } catch (e) {
+                        displayMessage("Server", event.data);
+                    }
+                });
+
+                websocket.addEventListener("close", (event) => {
+                    console.log("Disconnected from WebSocket server.");
+
+                    if (reconnectAttempts < maxReconnectAttempts) {
+                        const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 10000);
+                        reconnectAttempts++;
+
+                        showChatError(`Connection lost. Reconnecting... (Attempt ${reconnectAttempts}/${maxReconnectAttempts})`, 0);
+
+                        setTimeout(initWebSocket, delay);
+                    } else {
+                        showChatError('Unable to connect to chat server. Please refresh the page.', 0);
+                    }
+                });
+
+                websocket.addEventListener("error", (error) => {
+                    console.error("WebSocket error: ", error);
+                    showChatError('Connection error occurred.');
+                });
+            } catch (error) {
+                console.error("Error initializing WebSocket:", error);
+                showChatError('Failed to initialize chat connection.');
+            }
         }
 
         function displayMessage(username, content) {
             const messageContainer = document.getElementById("response");
+            if (!messageContainer) return;
+
             const newMessage = document.createElement("div");
-            newMessage.innerHTML = `<strong>${username}:</strong> ${content}`;
+            newMessage.innerHTML = `<strong>${escapeHtml(username)}:</strong> ${escapeHtml(content)}`;
             newMessage.classList.add("p-2", "mb-2", "bg-blue-100", "rounded-lg");
             messageContainer.appendChild(newMessage);
 
-            // Auto-scroll to bottom of chat
-            messageContainer.scrollTop = messageContainer.scrollHeight;
+            scrollToBottom();
         }
 
-        // Verify on load if the user is logged in
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
         document.addEventListener("DOMContentLoaded", () => {
             const token = sessionStorage.getItem("token");
 
             if (token) {
-                document.getElementById('auth-section').classList.add('hidden');
-                document.getElementById('chat-section').classList.remove('hidden');
-                // Initialize WebSocket and load messages if user is already logged in
-                initWebSocket();
-                loadAllMessages();
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+
+                    if (payload.exp && payload.exp * 1000 < Date.now()) {
+                        sessionStorage.removeItem('token');
+                        showGlobalError('Session expired. Please log in again.');
+                    } else {
+                        document.getElementById('auth-section').classList.add('hidden');
+                        document.getElementById('chat-section').classList.remove('hidden');
+                        initWebSocket();
+                        loadAllMessages();
+                    }
+                } catch (e) {
+                    console.error('Invalid token:', e);
+                    sessionStorage.removeItem('token');
+                    showGlobalError('Invalid session. Please log in again.');
+                }
             }
 
-            // Handle delete button clicks
             document.addEventListener('click', function (e) {
                 if (e.target.classList.contains('delete-btn')) {
                     const messageId = e.target.dataset.messageId;
-                    deleteMessage(messageId);
+                    if (confirm('Are you sure you want to delete this message?')) {
+                        deleteMessage(messageId);
+                    }
                 }
             });
 
             document.addEventListener('htmx:afterRequest', (event) => {
                 const response = document.getElementById('response');
-                const lastMessage = response.lastElementChild;
-                if (lastMessage) {
-                    console.log(lastMessage);
-                    window.lastTimestamp = lastMessage.getAttribute('data-timestamp');
+                if (response) {
+                    const lastMessage = response.lastElementChild;
+                    if (lastMessage) {
+                        window.lastTimestamp = lastMessage.getAttribute('data-timestamp');
+                    }
                 }
 
-                // Show delete buttons after HTMX requests
                 showDeleteButtons();
             });
 
-            // Handling load history
+            document.addEventListener('htmx:responseError', (event) => {
+                console.error('HTMX Response Error:', event.detail);
+
+                const status = event.detail.xhr.status;
+                let errorMessage = 'An error occurred. Please try again.';
+
+                if (status === 401) {
+                    errorMessage = 'Session expired. Please log in again.';
+                    sessionStorage.removeItem('token');
+                    setTimeout(() => {
+                        window.location.href = '/';
+                    }, 2000);
+                } else if (status === 403) {
+                    errorMessage = 'You do not have permission to perform this action.';
+                } else if (status === 404) {
+                    errorMessage = 'Resource not found.';
+                } else if (status === 500) {
+                    errorMessage = 'Server error. Please try again later.';
+                } else if (status === 0) {
+                    errorMessage = 'Network error. Please check your connection.';
+                }
+
+                showGlobalError(errorMessage);
+            });
+
+            document.addEventListener('htmx:sendError', (event) => {
+                console.error('HTMX Send Error:', event.detail);
+                showGlobalError('Network error. Please check your internet connection.');
+            });
+
+            document.addEventListener('htmx:timeout', (event) => {
+                console.error('HTMX Timeout:', event.detail);
+                showGlobalError('Request timeout. Please try again.');
+            });
+
             document.getElementById('history').addEventListener('click', () => {
                 let el = document.getElementById('chat-history');
                 el.classList.remove('hidden');
-            })
+            });
 
-            // Clear message form
             document.getElementById("message-form").addEventListener("submit", function (event) {
                 const input = this.querySelector("input[name='message']");
                 const message = input.value.trim();
 
-                if (websocket && websocket.readyState === WebSocket.OPEN && message) {
-                    // Get username from token
+                if (!message) {
+                    event.preventDefault();
+                    return false;
+                }
+
+                if (websocket && websocket.readyState === WebSocket.OPEN) {
                     const token = sessionStorage.getItem("token");
                     if (token) {
                         try {
-                            // Decode JWT to get username
                             const payload = JSON.parse(atob(token.split('.')[1]));
                             const username = payload.username;
 
@@ -274,25 +510,27 @@
 
                             websocket.send(JSON.stringify(messageData));
 
-                            // Clear input immediately
                             input.value = "";
 
-                            // Prevent the default HTMX form submission
                             event.preventDefault();
                             return false;
                         } catch (e) {
                             console.error("Error parsing token:", e);
+                            showChatError('Error sending message. Please try again.');
                         }
+                    }
+                } else {
+                    showChatError('Not connected to chat server. Attempting to reconnect...');
+                    if (!websocket || websocket.readyState === WebSocket.CLOSED) {
+                        initWebSocket();
                     }
                 }
 
-                // If WebSocket fails, allow normal form submission
                 setTimeout(() => {
                     this.reset();
                 }, 500);
             });
 
-            // Clear the register and login forms after submission
             document.getElementById("register-form").addEventListener("submit", function () {
                 setTimeout(() => {
                     this.reset();
@@ -307,17 +545,15 @@
 
             // Logout
             document.getElementById('logout').addEventListener('click', () => {
-                // Close WebSocket connection
                 if (websocket) {
                     websocket.close();
                     websocket = null;
                 }
-                sessionStorage.removeItem('token')
-                window.location.href = '/'
+                sessionStorage.removeItem('token');
+                window.location.href = '/';
             });
         });
 
-        // Set Auth Header for OAuth2
         document.body.addEventListener('htmx:configRequest', (event) => {
             const url = event.detail.path;
             const token = sessionStorage.getItem("token");
@@ -327,30 +563,41 @@
             }
         });
 
-        // After request if it is the login-form, set token in session storage
         document.addEventListener('htmx:afterRequest', (event) => {
-            if (event.target.id === 'login-form') {
-                const responseText = document.getElementById('auth-response').innerText.trim();
-                const resp = JSON.parse(responseText);
-                const token = resp.access_token;
-                if (resp && resp.access_token) {
-                    sessionStorage.setItem('token', token);
-                    document.getElementById('auth-section').classList.add('hidden');
-                    document.getElementById('chat-section').classList.remove('hidden');
+            if (event.target.id === 'login-form' || event.target.id === 'register-form') {
+                try {
+                    const responseText = document.getElementById('auth-response').innerText.trim();
 
-                    // Initialize WebSocket and load messages after successful login
-                    initWebSocket();
-                    loadAllMessages();
+                    if (!responseText) return;
+
+                    const resp = JSON.parse(responseText);
+
+                    if (resp && resp.access_token) {
+                        sessionStorage.setItem('token', resp.access_token);
+                        document.getElementById('auth-section').classList.add('hidden');
+                        document.getElementById('chat-section').classList.remove('hidden');
+
+                        hideGlobalError();
+
+                        initWebSocket();
+                        loadAllMessages();
+                    } else if (resp && resp.error) {
+                        showGlobalError(resp.error);
+                    }
+                } catch (e) {
+                    console.error('Error processing auth response:', e);
                 }
             }
         });
     })();
 
-    // SHOW FORM - F() FOR HANDLE TAB
     function showForm(formType) {
         const registerForm = document.getElementById('register-form');
         const loginForm = document.getElementById('login-form');
         const tabs = document.querySelectorAll('.tab');
+
+        // Clear any previous errors when switching forms
+        hideGlobalError();
 
         if (formType === 'register') {
             registerForm.classList.remove('hidden');
@@ -358,14 +605,14 @@
             tabs[0].classList.add('bg-green-500', 'text-white');
             tabs[0].classList.remove('bg-gray-300', 'text-gray-700');
             tabs[1].classList.add('bg-gray-300', 'text-gray-700');
-            tabs[1].classList.remove('bg-green-500', 'text-white');
+            tabs[1].classList.remove('bg-blue-500', 'text-white');
         } else {
             registerForm.classList.add('hidden');
             loginForm.classList.remove('hidden');
             tabs[1].classList.add('bg-blue-500', 'text-white');
             tabs[1].classList.remove('bg-gray-300', 'text-gray-700');
             tabs[0].classList.add('bg-gray-300', 'text-gray-700');
-            tabs[0].classList.remove('bg-blue-500', 'text-white');
+            tabs[0].classList.remove('bg-green-500', 'text-white');
         }
     }
 </script>
