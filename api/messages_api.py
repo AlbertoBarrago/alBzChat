@@ -23,8 +23,8 @@ async def get_messages(request: Request):
     return HTMLResponse(content=response_json)
 
 @router.get("/all-messages", response_class=HTMLResponse)
-async def get_all_messages_endpoint(current_user: User = Depends(get_current_user)):
-    """Get all messages for initial chat load"""
+async def get_all_messages_endpoint():
+    """Get all messages for an initial chat load"""
     response_html = await make_call_and_handle_result(get_all_messages)
     return HTMLResponse(content=response_html)
 
@@ -34,7 +34,6 @@ async def send_message(request: Request, current_user: User = Depends(get_curren
     form = await request.form()
     message_content = form.get("message")
 
-    # CONTROLLA SE IL MESSAGGIO NON È VUOTO
     if message_content and message_content.strip():
         message = Message(sender=current_user, content=message_content)
         send_message_to_network(message_content, message)
@@ -44,7 +43,7 @@ async def send_message(request: Request, current_user: User = Depends(get_curren
 
 @router.delete("/delete/{message_id}")
 async def delete_message_endpoint(message_id: int, current_user: User = Depends(get_current_user)):
-    """Delete a message (only if user owns it)"""
+    """Delete a message (only if the user owns it)"""
     user_id = current_user.id if hasattr(current_user, 'id') else current_user.user_id
     result = delete_message(message_id, user_id)
     return JSONResponse(content=result)
