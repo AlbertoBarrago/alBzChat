@@ -13,6 +13,7 @@ class UserLoggedIn(User):
     def __init__(self, user_id: int, username: str, password: str):
         super().__init__(username, password)
         self.id = user_id
+        self.user_id = user_id
 
     def __getitem__(self, key):
         return getattr(self, key)

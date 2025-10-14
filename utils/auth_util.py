@@ -36,13 +36,18 @@ def verify_access_token(token: str):
         return None
 
 
+from core.user_entities import UserLoggedIn
+
+
 async def get_current_user(token: str = Depends(oauth2_scheme)):
     payload = verify_access_token(token)
     if payload is None:
         raise HTTPException(status_code=401, detail="Invalid token")
+
     user_id = payload.get("user_id")
-    user = payload.get("username")
-    return {
-        "user_id": user_id,
-        "username": user,
-    }
+    username = payload.get("username")
+
+    if not user_id or not username:
+        raise HTTPException(status_code=400, detail="User information missing in token")
+
+    return UserLoggedIn(user_id=user_id, username=username, password="")

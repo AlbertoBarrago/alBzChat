@@ -1,6 +1,5 @@
 import json
 from datetime import datetime
-
 from adapters.messages_adapter import get_new_messages
 
 
@@ -33,15 +32,47 @@ async def prepare_dict(resp):
     return json.dumps(formatted_messages)
 
 
-async def make_call_and_handle_result(method_to_get_data):
+async def make_call_and_handle_result(func):
     """
-    Fetch messages for all users in the instance
-    :param method_to_get_data:
-    :return:
+    Call adapter service and format messages
+    :param func: service method to call
+    :return: formatted HTML
     """
-    resp = method_to_get_data()
+    messages = func()
+    formatted_messages = []
 
-    return await prepare(resp)
+    for el in messages:
+        message_data = {
+            'id': el[0],
+            'message': el[1],
+            'dateTime': el[2].strftime('%H:%M:%S'),
+            'username': el[3],
+            'user_id': el[4]
+        }
+        formatted_messages.append(message_data)
+
+    # Build HTML using simple string formatting
+    html_parts = []
+    for msg in formatted_messages:
+        html_part = f"""
+        <div class="message-item p-2 mb-2 bg-gray-50 rounded-lg" data-message-id="{msg['id']}" data-user-id="{msg['user_id']}">
+            <div class="flex justify-between items-start">
+                <div class="flex-1">
+                    <strong>{msg['username']}</strong> <span class="text-gray-500 text-sm">{msg['dateTime']}</span>
+                    <div class="mt-1">{msg['message']}</div>
+                </div>
+                <button class="delete-btn ml-2 text-red-500 hover:text-red-700 text-sm" 
+                        data-message-id="{msg['id']}" data-user-id="{msg['user_id']}"
+                        style="display: none;">
+                    🗑️
+                </button>
+            </div>
+        </div>
+        """
+        html_parts.append(html_part)
+
+    response_html = "".join(html_parts)
+    return response_html
 
 
 async def make_call_and_handle_all_result(last_timestamp):
