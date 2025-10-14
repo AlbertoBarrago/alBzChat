@@ -81,7 +81,7 @@
         </form>
         <!-- CHAT PANEL-->
         <div id="response"
-             class="mb-4 border border-gray-300 rounded-lg w-full max-h-80 flex-grow overflow-y-auto">
+             class="mb-4 border border-gray-300 rounded-lg w-full max-h-80 flex-grow overflow-y-auto p-3">
         </div>
         <!-- HISTORY -->
         <div id="chat-history"
@@ -93,6 +93,128 @@
 <script>
     // SETUP INIT
     (function init() {
+        // WebSocket variable
+        let websocket = null;
+
+        // Function to load all messages on enter
+        function loadAllMessages() {
+            fetch('/message/all-messages', {
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`
+                }
+            })
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('response').innerHTML = html;
+                showDeleteButtons();
+                scrollToBottom();
+            })
+            .catch(error => console.error('Error loading messages:', error));
+        }
+
+        // Function to show delete buttons only for user's messages
+        function showDeleteButtons() {
+            const token = sessionStorage.getItem("token");
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const currentUserId = payload.user_id;
+
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        const messageUserId = parseInt(btn.dataset.userId);
+                        if (messageUserId === currentUserId) {
+                            btn.style.display = 'block';
+                        }
+                    });
+                } catch (e) {
+                    console.error('Error parsing token:', e);
+                }
+            }
+        }
+
+        // Function to scroll to bottom
+        function scrollToBottom() {
+            const messageContainer = document.getElementById("response");
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+
+        // Function to delete message
+        function deleteMessage(messageId) {
+            fetch(`/message/delete/${messageId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${sessionStorage.getItem("token")}`
+                }
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        // Remove message from UI
+                        const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                        if (messageElement) {
+                            messageElement.remove();
+                        }
+
+                        // Broadcast deletion to other clients
+                        if (websocket && websocket.readyState === WebSocket.OPEN) {
+                            const deleteData = {
+                                type: 'delete',
+                                messageId: messageId
+                            };
+                            websocket.send(JSON.stringify(deleteData));
+                        }
+                    } else {
+                        alert('Error deleting message: ' + result.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error deleting message:', error);
+                    alert('Error deleting message');
+                });
+        }
+
+        function initWebSocket() {
+            const HOST = "ws://localhost:65432";
+            websocket = new WebSocket(HOST);
+
+            websocket.addEventListener("open", () => {
+                console.log("Connected to the WebSocket server.");
+            });
+
+            websocket.addEventListener("message", (event) => {
+                console.log("Message received: ", event.data);
+
+                try {
+                    // Try to parse as JSON
+                    const messageData = JSON.parse(event.data);
+                    displayMessage(messageData.user, messageData.content);
+                } catch (e) {
+                    // Handle plain text messages
+                    displayMessage("Server", event.data);
+                }
+            });
+
+            websocket.addEventListener("close", () => {
+                console.log("Disconnected from WebSocket server.");
+                setTimeout(initWebSocket, 3000);
+            });
+
+            websocket.addEventListener("error", (error) => {
+                console.error("WebSocket error: ", error);
+            });
+        }
+
+        function displayMessage(username, content) {
+            const messageContainer = document.getElementById("response");
+            const newMessage = document.createElement("div");
+            newMessage.innerHTML = `<strong>${username}:</strong> ${content}`;
+            newMessage.classList.add("p-2", "mb-2", "bg-blue-100", "rounded-lg");
+            messageContainer.appendChild(newMessage);
+
+            // Auto-scroll to bottom of chat
+            messageContainer.scrollTop = messageContainer.scrollHeight;
+        }
+
         // Verify on load if the user is logged in
         document.addEventListener("DOMContentLoaded", () => {
             const token = sessionStorage.getItem("token");
@@ -100,7 +222,18 @@
             if (token) {
                 document.getElementById('auth-section').classList.add('hidden');
                 document.getElementById('chat-section').classList.remove('hidden');
+                // Initialize WebSocket and load messages if user is already logged in
+                initWebSocket();
+                loadAllMessages();
             }
+
+            // Handle delete button clicks
+            document.addEventListener('click', function (e) {
+                if (e.target.classList.contains('delete-btn')) {
+                    const messageId = e.target.dataset.messageId;
+                    deleteMessage(messageId);
+                }
+            });
 
             document.addEventListener('htmx:afterRequest', (event) => {
                 const response = document.getElementById('response');
@@ -109,6 +242,9 @@
                     console.log(lastMessage);
                     window.lastTimestamp = lastMessage.getAttribute('data-timestamp');
                 }
+
+                // Show delete buttons after HTMX requests
+                showDeleteButtons();
             });
 
             // Handling load history
@@ -119,6 +255,38 @@
 
             // Clear message form
             document.getElementById("message-form").addEventListener("submit", function (event) {
+                const input = this.querySelector("input[name='message']");
+                const message = input.value.trim();
+
+                if (websocket && websocket.readyState === WebSocket.OPEN && message) {
+                    // Get username from token
+                    const token = sessionStorage.getItem("token");
+                    if (token) {
+                        try {
+                            // Decode JWT to get username
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            const username = payload.username;
+
+                            const messageData = {
+                                user: username,
+                                content: message
+                            };
+
+                            websocket.send(JSON.stringify(messageData));
+
+                            // Clear input immediately
+                            input.value = "";
+
+                            // Prevent the default HTMX form submission
+                            event.preventDefault();
+                            return false;
+                        } catch (e) {
+                            console.error("Error parsing token:", e);
+                        }
+                    }
+                }
+
+                // If WebSocket fails, allow normal form submission
                 setTimeout(() => {
                     this.reset();
                 }, 500);
@@ -136,12 +304,19 @@
                     this.reset();
                 }, 500);
             });
+
             // Logout
             document.getElementById('logout').addEventListener('click', () => {
+                // Close WebSocket connection
+                if (websocket) {
+                    websocket.close();
+                    websocket = null;
+                }
                 sessionStorage.removeItem('token')
                 window.location.href = '/'
-            })
-        })
+            });
+        });
+
         // Set Auth Header for OAuth2
         document.body.addEventListener('htmx:configRequest', (event) => {
             const url = event.detail.path;
@@ -151,11 +326,9 @@
                 event.detail.headers['Authorization'] = `Bearer ${token}`;
             }
         });
-        // After request if is login-form, set token in session storage
-        document.addEventListener('htmx:afterRequest', (event) => {
-            // console.log('htmx:afterRequest triggered');
-            // console.log('Event Target:', event.target.id);
 
+        // After request if it is the login-form, set token in session storage
+        document.addEventListener('htmx:afterRequest', (event) => {
             if (event.target.id === 'login-form') {
                 const responseText = document.getElementById('auth-response').innerText.trim();
                 const resp = JSON.parse(responseText);
@@ -164,10 +337,14 @@
                     sessionStorage.setItem('token', token);
                     document.getElementById('auth-section').classList.add('hidden');
                     document.getElementById('chat-section').classList.remove('hidden');
+
+                    // Initialize WebSocket and load messages after successful login
+                    initWebSocket();
+                    loadAllMessages();
                 }
             }
         });
-    })()
+    })();
 
     // SHOW FORM - F() FOR HANDLE TAB
     function showForm(formType) {
@@ -193,3 +370,4 @@
     }
 </script>
 </body>
+</html>

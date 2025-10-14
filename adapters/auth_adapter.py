@@ -3,16 +3,14 @@ import hashlib
 from datetime import timedelta
 
 from fastapi import HTTPException
-from core.user_entities import UserLoggedIn, User
-from db.create import get_db_connection
 from mysql.connector import Error
-
+from core.user_entities import User
+from db.create import get_db_connection
 from utils.auth_util import create_access_token
-
-connection = get_db_connection()
 
 
 def register_auth_persistence(user: User):
+    connection = get_db_connection()
     username = user.username
     hashed_password = hashlib.sha256(user.password.encode()).hexdigest()
     try:
@@ -46,6 +44,7 @@ def register_auth_persistence(user: User):
 
 
 def login_auth_persistence(user: User):
+    connection = get_db_connection()  # Connessione ritardata
     if connection is None:
         return {"message": "Database connection is not established."}
 
