@@ -32,7 +32,7 @@ async def prepare_dict(resp):
     return json.dumps(formatted_messages)
 
 
-async def make_call_and_handle_result(func):
+async def prepare_message(func):
     """
     Call adapter service and format messages
     :param func: service method to call
@@ -51,7 +51,6 @@ async def make_call_and_handle_result(func):
         }
         formatted_messages.append(message_data)
 
-    # Build HTML using simple string formatting
     html_parts = []
     for msg in formatted_messages:
         html_part = f"""
@@ -75,7 +74,7 @@ async def make_call_and_handle_result(func):
     return response_html
 
 
-async def make_call_and_handle_all_result(last_timestamp):
+async def fetch_all_messages(last_timestamp):
     """
     Fetch messages for all users in the instance.
     :param last_timestamp: The last timestamp of messages received (can be Unix timestamp or datetime).
@@ -96,7 +95,7 @@ async def make_call_and_handle_all_result(last_timestamp):
     return await prepare_dict(new_messages)
 
 
-async def make_call_and_handle_result_history(chat_service):
+async def fetch_histories(chat_service):
     """
     Fetch messages by user_id
     :param chat_service:

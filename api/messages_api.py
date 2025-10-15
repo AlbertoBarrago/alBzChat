@@ -5,11 +5,11 @@ from starlette.responses import JSONResponse
 
 from core.messages_entities import Message
 from services.chat_service import ChatService
-from adapters.network_adapter import send_message_to_network
+from adapters.network_adapter import persist_message
 from adapters.messages_adapter import get_new_messages, get_all_messages, delete_message
 from core.user_entities import User
-from services.message_service import make_call_and_handle_all_result, make_call_and_handle_result_history, \
-    make_call_and_handle_result
+from services.message_service import fetch_all_messages, fetch_histories, \
+    prepare_message
 from utils.auth_util import get_current_user
 
 router = APIRouter()
@@ -19,13 +19,13 @@ router = APIRouter()
 async def get_messages(request: Request):
     body = await request.json()
     last_timestamp = body.get("last_timestamp", 0.0)
-    response_json = await make_call_and_handle_all_result(last_timestamp)
+    response_json = await fetch_all_messages(last_timestamp)
     return HTMLResponse(content=response_json)
 
 @router.get("/all-messages", response_class=HTMLResponse)
 async def get_all_messages_endpoint():
     """Get all messages for an initial chat load"""
-    response_html = await make_call_and_handle_result(get_all_messages)
+    response_html = await prepare_message(get_all_messages)
     return HTMLResponse(content=response_html)
 
 
@@ -36,9 +36,8 @@ async def send_message(request: Request, current_user: User = Depends(get_curren
 
     if message_content and message_content.strip():
         message = Message(sender=current_user, content=message_content)
-        send_message_to_network(message_content, message)
 
-    response_html = await make_call_and_handle_result(get_all_messages)
+    response_html = await prepare_message(get_all_messages)
     return HTMLResponse(content=response_html)
 
 @router.delete("/delete/{message_id}")
@@ -52,7 +51,7 @@ async def delete_message_endpoint(message_id: int, current_user: User = Depends(
 @router.get("/history", response_class=HTMLResponse)
 async def get_history(current_user: User = Depends(get_current_user)):
     chat_service = ChatService(current_user)
-    response_html = await make_call_and_handle_result_history(chat_service)
+    response_html = await fetch_histories(chat_service)
     return HTMLResponse(content=response_html)
 
 

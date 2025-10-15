@@ -1,9 +1,11 @@
 import json
 import asyncio
 import websockets
+from websockets import WebSocketServerProtocol
+
 from adapters.messages_adapter import save_message
 from core.messages_entities import Message
-from core.user_entities import UserLoggedIn  # QUESTO È IMPORTANTE!
+from core.user_entities import UserLoggedIn
 import logging
 
 HOST = 'localhost'
@@ -15,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-async def handle_client_connection(websocket, path):
+async def handle_client_connection(websocket: WebSocketServerProtocol, path: str) -> None:
     """Handle WebSocket connections"""
     logger.info(f"WebSocket connected by {websocket.remote_address}")
     active_connections.add(websocket)
@@ -33,7 +35,6 @@ async def handle_client_connection(websocket, path):
 
                 logger.info(f"Received message from {sender_username}: {message_content}")
 
-                # Recupera il user_id dal database
                 from db.create import get_db_connection
                 connection = get_db_connection()
                 cursor = connection.cursor()
@@ -42,20 +43,16 @@ async def handle_client_connection(websocket, path):
 
                 if result:
                     user_id = result[0]
-                    # USA UserLoggedIn NON User!
                     user_logged_in = UserLoggedIn(user_id=user_id, username=sender_username, password="")
                     message_dto = Message(sender=user_logged_in, content=message_content)
 
-                    # Save message to database
                     save_result = save_message(message_dto)
                     logger.info(f"Save result: {save_result}")
 
-                    # Broadcast the SAME JSON message to all other clients
                     await broadcast_message(message, websocket)
                 else:
                     logger.error(f"User {sender_username} not found in database")
 
-                # Send confirmation to sender
                 await websocket.send("Message received successfully.")
 
             except json.JSONDecodeError:
@@ -109,8 +106,8 @@ def start_socket_server():
         raise
 
 
-def send_message_to_network(message: str, message_dto: Message):
-    """Send message to network - simplified version that just saves to DB"""
+def persist_message(message: str, message_dto: Message):
+    """Send a message to a network-simplified version that just saves to DB"""
     logger.info(f"Saving message from {message_dto.sender.username}: {message}")
     save_message(message_dto)
 
